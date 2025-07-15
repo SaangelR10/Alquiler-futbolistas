@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import PlayerMap from '../components/PlayerMap';
 import PlayerCard from '../components/PlayerCard';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 // Estructura de departamentos y ciudades (muestra, escalable)
 const departamentosColombia = [
@@ -48,7 +49,7 @@ const jugadoresEjemplo = [
     precio: 50,
     ubicacion: 'Bogotá',
     departamento: 'Cundinamarca',
-    disponibilidad: 'Disponible',
+    disponibilidadDias: ['Lunes', 'Miércoles', 'Viernes'],
     descripcion: 'Rápido, goleador y con gran visión de juego.',
     foto: 'https://randomuser.me/api/portraits/men/32.jpg',
     lat: 4.711,
@@ -62,7 +63,7 @@ const jugadoresEjemplo = [
     precio: 40,
     ubicacion: 'Medellín',
     departamento: 'Antioquia',
-    disponibilidad: 'Disponible',
+    disponibilidadDias: ['Martes', 'Jueves', 'Sábado'],
     descripcion: 'Seguro bajo palos y gran juego aéreo.',
     foto: 'https://randomuser.me/api/portraits/men/45.jpg',
     lat: 6.2442,
@@ -76,7 +77,7 @@ const jugadoresEjemplo = [
     precio: 35,
     ubicacion: 'Cali',
     departamento: 'Valle del Cauca',
-    disponibilidad: 'No disponible',
+    disponibilidadDias: ['Lunes', 'Jueves', 'Domingo'],
     descripcion: 'Fuerte, rápido y con gran anticipación.',
     foto: 'https://randomuser.me/api/portraits/men/52.jpg',
     lat: 3.4516,
@@ -86,16 +87,26 @@ const jugadoresEjemplo = [
 
 const posiciones = ['Delantero', 'Mediocampista', 'Defensa', 'Portero'];
 
+// Utilidad para obtener el día de la semana en español
+const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+function obtenerDiaSemana(fechaStr) {
+  if (!fechaStr) return null;
+  const fecha = new Date(fechaStr);
+  return diasSemana[fecha.getDay()];
+}
+
 const BuscarJugadores = () => {
+  const navigate = useNavigate();
   const [filtroDepartamento, setFiltroDepartamento] = useState('');
   const [filtroCiudad, setFiltroCiudad] = useState('');
   const [busquedaCiudad, setBusquedaCiudad] = useState('');
   const [filtroPosicion, setFiltroPosicion] = useState('');
-  const [filtroDisponibilidad, setFiltroDisponibilidad] = useState('');
+  const [filtroFecha, setFiltroFecha] = useState('');
   const [filtroPrecio, setFiltroPrecio] = useState([0, 100000]);
   const [filtroNombre, setFiltroNombre] = useState('');
   const [showSugerencias, setShowSugerencias] = useState(false);
   const [vista, setVista] = useState('tarjetas'); // 'tarjetas' o 'mapa'
+  const [mostrarFiltros, setMostrarFiltros] = useState(false);
 
   // Función para limpiar filtros
   const limpiarFiltros = () => {
@@ -103,7 +114,7 @@ const BuscarJugadores = () => {
     setFiltroCiudad('');
     setBusquedaCiudad('');
     setFiltroPosicion('');
-    setFiltroDisponibilidad('');
+    setFiltroFecha('');
     setFiltroPrecio([0, 100000]);
     setFiltroNombre('');
   };
@@ -119,7 +130,7 @@ const BuscarJugadores = () => {
     (!filtroDepartamento || j.departamento === filtroDepartamento) &&
     (!filtroCiudad || j.ubicacion === filtroCiudad) &&
     (!filtroPosicion || j.posicion === filtroPosicion) &&
-    (!filtroDisponibilidad || j.disponibilidad === filtroDisponibilidad) &&
+    (!filtroFecha || (j.disponibilidadDias && j.disponibilidadDias.includes(obtenerDiaSemana(filtroFecha)))) &&
     (j.precio >= filtroPrecio[0] && j.precio <= filtroPrecio[1])
   );
 
@@ -128,7 +139,7 @@ const BuscarJugadores = () => {
 
   // Determinar si hay filtros aplicados
   const filtrosAplicados =
-    filtroNombre || filtroDepartamento || filtroCiudad || busquedaCiudad || filtroPosicion || filtroDisponibilidad || filtroPrecio[0] !== 0 || filtroPrecio[1] !== 100000;
+    filtroNombre || filtroDepartamento || filtroCiudad || busquedaCiudad || filtroPosicion || filtroFecha || filtroPrecio[0] !== 0 || filtroPrecio[1] !== 100000;
 
   // Sugerencias de nombres de jugadores
   const sugerenciasNombres = filtroNombre
@@ -140,65 +151,13 @@ const BuscarJugadores = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 mt-24">
+      <button onClick={() => navigate('/buscar')} className="mb-8 self-start bg-white border border-indigo-200 text-indigo-700 font-bold px-6 py-2 rounded-xl shadow hover:bg-indigo-50 hover:border-indigo-400 transition flex items-center gap-2">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+        Volver
+      </button>
       <h1 className="text-3xl font-bold text-indigo-700 mb-6 text-center">Buscar jugadores</h1>
-      {/* Filtro de búsqueda por nombre */}
-      <div className="flex justify-center mb-4 w-full">
-        <div className="relative w-full max-w-md">
-          <input
-            type="text"
-            className="border rounded-lg px-4 py-2 w-full text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 pl-10"
-            placeholder="Buscar por nombre de jugador..."
-            value={filtroNombre}
-            onChange={e => {
-              setFiltroNombre(e.target.value);
-              setShowSugerencias(true);
-            }}
-            onFocus={() => setShowSugerencias(true)}
-            onBlur={() => setTimeout(() => setShowSugerencias(false), 120)}
-          />
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-          </span>
-          {/* Lista de sugerencias */}
-          {showSugerencias && sugerenciasNombres.length > 0 && (
-            <div className="absolute z-30 left-0 right-0 bg-white border border-indigo-100 rounded-lg shadow mt-1 max-h-56 overflow-y-auto animate-fade-in">
-              {sugerenciasNombres.map(nombre => (
-                <div
-                  key={nombre}
-                  className="px-4 py-2 cursor-pointer hover:bg-indigo-50 text-indigo-700 text-sm"
-                  onMouseDown={() => {
-                    setFiltroNombre(nombre);
-                    setShowSugerencias(false);
-                  }}
-                >
-                  {nombre}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-      {/* Toggle de vista */}
-      <div className="flex justify-center mb-8">
-        <div className="inline-flex rounded-xl bg-indigo-50 p-1 shadow border border-indigo-100">
-          <button
-            className={`flex items-center gap-2 px-6 py-2 rounded-lg font-semibold transition-all duration-200 ${vista==='tarjetas' ? 'bg-white text-indigo-700 shadow' : 'text-gray-500 hover:text-indigo-700'}`}
-            onClick={() => setVista('tarjetas')}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/></svg>
-            Tarjetas
-          </button>
-          <button
-            className={`flex items-center gap-2 px-6 py-2 rounded-lg font-semibold transition-all duration-200 ${vista==='mapa' ? 'bg-white text-indigo-700 shadow' : 'text-gray-500 hover:text-indigo-700'}`}
-            onClick={() => setVista('mapa')}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 20l-5.447-2.724A2 2 0 013 15.382V6.618a2 2 0 011.553-1.894l5.447-1.724a2 2 0 011.262 0l5.447 1.724A2 2 0 0121 6.618v8.764a2 2 0 01-1.553 1.894L14 20a2 2 0 01-1.262 0z" /></svg>
-            Mapa
-          </button>
-        </div>
-      </div>
-      {/* Filtro profesional departamento/ciudad */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6 items-center justify-center w-full">
+      {/* Filtro profesional departamento/ciudad siempre visible */}
+      <div className="flex flex-col md:flex-row gap-4 mb-2 items-center justify-center w-full">
         <select
           className="border rounded-lg px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-56 md:w-60"
           value={filtroDepartamento}
@@ -260,108 +219,149 @@ const BuscarJugadores = () => {
           )}
         </div>
       </div>
-      {/* Filtros existentes y botón limpiar filtros */}
-      <div className="bg-white rounded-xl shadow p-4 flex flex-col gap-2 mb-8 w-full items-center">
-        <div className="flex flex-col md:flex-row md:items-center md:gap-4 gap-2 w-full justify-center">
-          <div className="flex-1 flex flex-col min-w-[140px] max-w-[220px]">
-            <label className="text-sm font-semibold text-indigo-700 mb-1">Posición</label>
-            <select
-              className="border rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              value={filtroPosicion}
-              onChange={e => setFiltroPosicion(e.target.value)}
+      {/* Botón más filtros y filtros avanzados debajo del selector de ciudad */}
+      <div className="flex flex-col items-center w-full mb-6">
+        <div className="flex justify-center mb-2 w-full">
+          <button
+            className="flex items-center gap-2 px-6 py-2 rounded-lg font-semibold bg-white border border-indigo-200 shadow hover:bg-indigo-50 text-indigo-700 transition-all duration-200"
+            onClick={() => setMostrarFiltros(v => !v)}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 5h18M6 10h12M9 15h6" /></svg>
+            {mostrarFiltros ? 'Ocultar filtros' : 'Más filtros'}
+          </button>
+        </div>
+        <AnimatePresence>
+          {mostrarFiltros && (
+            <motion.div
+              initial={{ opacity: 0, y: -16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white rounded-xl shadow p-4 flex flex-col gap-2 w-full items-center"
             >
-              <option value="">Todas las posiciones</option>
-              {posiciones.map(pos => (
-                <option key={pos} value={pos}>{pos}</option>
-              ))}
-            </select>
-            <span className="text-xs text-gray-500 mt-1">Filtra por la posición.</span>
-          </div>
-          <div className="flex-1 flex flex-col min-w-[140px] max-w-[220px]">
-            <label className="text-sm font-semibold text-indigo-700 mb-1">Disponibilidad</label>
-            <select
-              className="border rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              value={filtroDisponibilidad}
-              onChange={e => setFiltroDisponibilidad(e.target.value)}
-            >
-              <option value="">Todas</option>
-              <option value="Disponible">Disponible</option>
-              <option value="No disponible">No disponible</option>
-            </select>
-            <span className="text-xs text-gray-500 mt-1">Solo jugadores disponibles.</span>
-          </div>
-          <div className="flex-1 flex flex-col min-w-[220px] max-w-[320px]">
-            <label className="text-sm font-semibold text-indigo-700 mb-1">Precio por hora (€)</label>
-            <div className="flex items-center gap-2 flex-wrap md:flex-nowrap">
-              <input
-                type="number"
-                min={0}
-                max={filtroPrecio[1]}
-                value={filtroPrecio[0]}
-                onChange={e => {
-                  const val = Math.max(0, Math.min(Number(e.target.value), filtroPrecio[1]));
-                  setFiltroPrecio([val, filtroPrecio[1]]);
-                }}
-                className="w-16 border rounded px-2 py-1 text-center text-indigo-700 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                placeholder="Mín"
-              />
-              <input
-                type="range"
-                min={0}
-                max={100000}
-                value={filtroPrecio[0]}
-                onChange={e => setFiltroPrecio([+e.target.value, filtroPrecio[1]])}
-                className="accent-indigo-600 w-24"
-              />
-              <span className="text-gray-600">-</span>
-              <input
-                type="number"
-                min={filtroPrecio[0]}
-                max={100000}
-                value={filtroPrecio[1]}
-                onChange={e => {
-                  const val = Math.max(filtroPrecio[0], Math.min(Number(e.target.value), 100000));
-                  setFiltroPrecio([filtroPrecio[0], val]);
-                }}
-                className="w-16 border rounded px-2 py-1 text-center text-indigo-700 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                placeholder="Máx"
-              />
-              <input
-                type="range"
-                min={0}
-                max={100000}
-                value={filtroPrecio[1]}
-                onChange={e => setFiltroPrecio([filtroPrecio[0], +e.target.value])}
-                className="accent-indigo-600 w-24"
-              />
-            </div>
-            <span className="text-xs text-gray-500 mt-1">Puedes escribir los valores o usar las barras.</span>
-          </div>
-          {/* Botón limpiar filtros */}
-          <div className="flex items-center justify-end min-w-[140px] md:ml-8 mt-0">
-            <button
-              onClick={limpiarFiltros}
-              className={`bg-white border border-indigo-200 text-indigo-700 font-semibold w-44 py-2 rounded-lg shadow hover:bg-indigo-50 hover:border-indigo-400 transition-all duration-200 flex items-center justify-center gap-2 relative ${filtrosAplicados ? 'pl-2' : ''}`}
-              title="Limpiar todos los filtros"
-              style={{ alignSelf: 'flex-end' }}
-            >
-              <AnimatePresence>
-                {filtrosAplicados && (
-                  <motion.span
-                    key="x-icon"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -10 }}
-                    transition={{ duration: 0.25 }}
-                    className="flex items-center"
+              <div className="flex flex-col md:flex-row md:items-center md:gap-4 gap-2 w-full justify-center">
+                <div className="flex-1 flex flex-col min-w-[140px] max-w-[220px]">
+                  <label className="text-sm font-semibold text-indigo-700 mb-1">Posición</label>
+                  <select
+                    className="border rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    value={filtroPosicion}
+                    onChange={e => setFiltroPosicion(e.target.value)}
                   >
-                    <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                  </motion.span>
-                )}
-              </AnimatePresence>
-              <span className="hidden sm:inline">Limpiar filtros</span>
-            </button>
-          </div>
+                    <option value="">Todas las posiciones</option>
+                    {posiciones.map(pos => (
+                      <option key={pos} value={pos}>{pos}</option>
+                    ))}
+                  </select>
+                  <span className="text-xs text-gray-500 mt-1">Filtra por la posición.</span>
+                </div>
+                {/* Filtro de fecha del partido */}
+                <div className="flex-1 flex flex-col min-w-[140px] max-w-[220px]">
+                  <label className="text-sm font-semibold text-indigo-700 mb-1">Fecha del partido</label>
+                  <input
+                    type="date"
+                    className="border rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    value={filtroFecha}
+                    onChange={e => setFiltroFecha(e.target.value)}
+                  />
+                  <span className="text-xs text-gray-500 mt-1">Selecciona la fecha del partido.</span>
+                </div>
+                {/* Filtro de precio y botón limpiar filtros siguen igual */}
+                <div className="flex-1 flex flex-col min-w-[220px] max-w-[320px]">
+                  <label className="text-sm font-semibold text-indigo-700 mb-1">Precio por hora (€)</label>
+                  <div className="flex items-center gap-2 flex-wrap md:flex-nowrap">
+                    <input
+                      type="number"
+                      min={0}
+                      max={filtroPrecio[1]}
+                      value={filtroPrecio[0]}
+                      onChange={e => {
+                        const val = Math.max(0, Math.min(Number(e.target.value), filtroPrecio[1]));
+                        setFiltroPrecio([val, filtroPrecio[1]]);
+                      }}
+                      className="w-16 border rounded px-2 py-1 text-center text-indigo-700 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                      placeholder="Mín"
+                    />
+                    <input
+                      type="range"
+                      min={0}
+                      max={100000}
+                      value={filtroPrecio[0]}
+                      onChange={e => setFiltroPrecio([+e.target.value, filtroPrecio[1]])}
+                      className="accent-indigo-600 w-24"
+                    />
+                    <span className="text-gray-600">-</span>
+                    <input
+                      type="number"
+                      min={filtroPrecio[0]}
+                      max={100000}
+                      value={filtroPrecio[1]}
+                      onChange={e => {
+                        const val = Math.max(filtroPrecio[0], Math.min(Number(e.target.value), 100000));
+                        setFiltroPrecio([filtroPrecio[0], val]);
+                      }}
+                      className="w-16 border rounded px-2 py-1 text-center text-indigo-700 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                      placeholder="Máx"
+                    />
+                    <input
+                      type="range"
+                      min={0}
+                      max={100000}
+                      value={filtroPrecio[1]}
+                      onChange={e => setFiltroPrecio([filtroPrecio[0], +e.target.value])}
+                      className="accent-indigo-600 w-24"
+                    />
+                  </div>
+                  <span className="text-xs text-gray-500 mt-1">Puedes escribir los valores o usar las barras.</span>
+                </div>
+                {/* Botón limpiar filtros */}
+                <div className="flex items-center justify-end min-w-[140px] md:ml-8 mt-0">
+                  <button
+                    onClick={limpiarFiltros}
+                    className={`bg-white border border-indigo-200 text-indigo-700 font-semibold w-44 py-2 rounded-lg shadow hover:bg-indigo-50 hover:border-indigo-400 transition-all duration-200 flex items-center justify-center gap-2 relative ${filtrosAplicados ? 'pl-2' : ''}`}
+                    title="Limpiar todos los filtros"
+                    style={{ alignSelf: 'flex-end' }}
+                  >
+                    <AnimatePresence>
+                      {filtrosAplicados && (
+                        <motion.span
+                          key="x-icon"
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -10 }}
+                          transition={{ duration: 0.25 }}
+                          className="flex items-center"
+                        >
+                          <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                    <span className="hidden sm:inline">Limpiar filtros</span>
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+      {/* Mensaje explicativo del toggle */}
+      <div className="text-center text-indigo-700 font-medium mb-2">Elige cómo quieres ver los resultados: en tarjetas o en el mapa.</div>
+      {/* Toggle de vista */}
+      <div className="flex justify-center mb-8">
+        <div className="inline-flex rounded-xl bg-indigo-50 p-1 shadow border border-indigo-100">
+          <button
+            className={`flex items-center gap-2 px-6 py-2 rounded-lg font-semibold transition-all duration-200 ${vista==='tarjetas' ? 'bg-white text-indigo-700 shadow' : 'text-gray-500 hover:text-indigo-700'}`}
+            onClick={() => setVista('tarjetas')}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/></svg>
+            Tarjetas
+          </button>
+          <button
+            className={`flex items-center gap-2 px-6 py-2 rounded-lg font-semibold transition-all duration-200 ${vista==='mapa' ? 'bg-white text-indigo-700 shadow' : 'text-gray-500 hover:text-indigo-700'}`}
+            onClick={() => setVista('mapa')}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 20l-5.447-2.724A2 2 0 013 15.382V6.618a2 2 0 011.553-1.894l5.447-1.724a2 2 0 011.262 0l5.447 1.724A2 2 0 0121 6.618v8.764a2 2 0 01-1.553 1.894L14 20a2 2 0 01-1.262 0z" /></svg>
+            Mapa
+          </button>
         </div>
       </div>
       {/* Vista seleccionada */}

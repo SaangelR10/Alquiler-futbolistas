@@ -1,15 +1,15 @@
 import React from 'react';
 
 const Footer = () => (
-  <footer className="bg-white border-t mt-16 py-6 text-center text-gray-500 text-sm shadow-inner">
-    <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between px-4">
-      <div className="mb-2 md:mb-0">
-        &copy; {new Date().getFullYear()} AlquilerFutbolistas. Todos los derechos reservados.
+  <footer className="bg-indigo-900 w-full py-2 text-center text-white text-xs">
+    <div className="w-full flex flex-col md:flex-row md:justify-between items-center md:items-center px-6 gap-2 md:gap-0 min-h-0">
+      <div className="mb-2 md:mb-0 w-full md:w-auto text-center md:text-left flex md:block">
+        <span className="w-full md:w-auto">&copy; {new Date().getFullYear()} AlquilerFutbolistas. Todos los derechos reservados.</span>
       </div>
-      <div className="flex gap-4 justify-center">
-        <a href="#" className="hover:text-indigo-700 transition">Contacto</a>
-        <a href="#" className="hover:text-indigo-700 transition">Términos</a>
-        <a href="#" className="hover:text-indigo-700 transition">Privacidad</a>
+      <div className="flex flex-col md:flex-row gap-2 md:gap-6 justify-center md:justify-end items-center w-full md:w-auto">
+        <a href="#" className="hover:text-blue-300 transition">Contacto</a>
+        <a href="#" className="hover:text-blue-300 transition">Términos</a>
+        <a href="#" className="hover:text-blue-300 transition">Privacidad</a>
       </div>
     </div>
   </footer>

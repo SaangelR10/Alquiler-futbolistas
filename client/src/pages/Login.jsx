@@ -74,7 +74,7 @@ const Login = () => {
         </div>
         <div className="flex justify-between w-full text-sm text-gray-500">
           <Link to="/register" className="hover:text-indigo-700 font-semibold">Crear cuenta</Link>
-          <a href="#" className="hover:text-indigo-700 font-semibold">¿Olvidaste tu contraseña?</a>
+          <Link to="/recuperar" className="hover:text-indigo-700 font-semibold">¿Olvidaste tu contraseña?</Link>
         </div>
       </div>
     </div>
