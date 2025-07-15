@@ -50,8 +50,8 @@ const BuscarJugadores = () => {
   const [filtroPosicion, setFiltroPosicion] = useState('');
   const [filtroDisponibilidad, setFiltroDisponibilidad] = useState('');
   const [filtroPrecio, setFiltroPrecio] = useState([0, 100]);
+  const [vista, setVista] = useState('tarjetas'); // 'tarjetas' o 'mapa'
 
-  // Filtrado simple
   const jugadoresFiltrados = jugadoresEjemplo.filter(j =>
     (!filtroPosicion || j.posicion === filtroPosicion) &&
     (!filtroDisponibilidad || j.disponibilidad === filtroDisponibilidad) &&
@@ -61,6 +61,25 @@ const BuscarJugadores = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 mt-24">
       <h1 className="text-3xl font-bold text-indigo-700 mb-6 text-center">Buscar jugadores</h1>
+      {/* Toggle de vista */}
+      <div className="flex justify-center mb-8">
+        <div className="inline-flex rounded-xl bg-indigo-50 p-1 shadow border border-indigo-100">
+          <button
+            className={`flex items-center gap-2 px-6 py-2 rounded-lg font-semibold transition-all duration-200 ${vista==='tarjetas' ? 'bg-white text-indigo-700 shadow' : 'text-gray-500 hover:text-indigo-700'}`}
+            onClick={() => setVista('tarjetas')}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/></svg>
+            Tarjetas
+          </button>
+          <button
+            className={`flex items-center gap-2 px-6 py-2 rounded-lg font-semibold transition-all duration-200 ${vista==='mapa' ? 'bg-white text-indigo-700 shadow' : 'text-gray-500 hover:text-indigo-700'}`}
+            onClick={() => setVista('mapa')}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 20l-5.447-2.724A2 2 0 013 15.382V6.618a2 2 0 011.553-1.894l5.447-1.724a2 2 0 011.262 0l5.447 1.724A2 2 0 0121 6.618v8.764a2 2 0 01-1.553 1.894L14 20a2 2 0 01-1.262 0z" /></svg>
+            Mapa
+          </button>
+        </div>
+      </div>
       {/* Filtros */}
       <div className="bg-white rounded-xl shadow p-4 flex flex-col md:flex-row gap-4 mb-8 items-center justify-between">
         <select
@@ -103,19 +122,20 @@ const BuscarJugadores = () => {
           <span className="text-indigo-700 font-bold">{filtroPrecio[0]}€ - {filtroPrecio[1]}€</span>
         </div>
       </div>
-      {/* Layout mapa + cards */}
-      <div className="flex flex-col lg:flex-row gap-8">
-        <div className="lg:w-1/2 w-full">
-          <PlayerMap jugadores={jugadoresFiltrados} />
-        </div>
-        <div className="lg:w-1/2 w-full grid grid-cols-1 sm:grid-cols-2 gap-6">
+      {/* Vista seleccionada */}
+      {vista === 'tarjetas' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {jugadoresFiltrados.length === 0 ? (
             <div className="col-span-full text-center text-gray-500">No se encontraron jugadores con esos filtros.</div>
           ) : (
             jugadoresFiltrados.map(j => <PlayerCard key={j.id} jugador={j} />)
           )}
         </div>
-      </div>
+      ) : (
+        <div className="max-w-4xl mx-auto">
+          <PlayerMap jugadores={jugadoresFiltrados} />
+        </div>
+      )}
     </div>
   );
 };

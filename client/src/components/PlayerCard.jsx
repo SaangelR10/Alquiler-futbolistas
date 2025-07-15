@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const PlayerCard = ({ jugador }) => {
   return (
@@ -21,7 +22,7 @@ const PlayerCard = ({ jugador }) => {
         </div>
         <div className="flex gap-2 mt-4">
           <button className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition">Reservar</button>
-          <button className="flex-1 border border-indigo-600 text-indigo-700 font-semibold py-2 px-4 rounded-lg hover:bg-indigo-50 transition">Ver perfil</button>
+          <Link to={`/jugador/${jugador.id}`} className="flex-1 border border-indigo-600 text-indigo-700 font-semibold py-2 px-4 rounded-lg hover:bg-indigo-50 transition text-center">Ver perfil</Link>
         </div>
       </div>
     </div>

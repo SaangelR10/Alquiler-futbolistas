@@ -1,22 +1,40 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Loader from './Loader';
 
 const Hero = () => {
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleBuscar = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      navigate('/buscar');
+    }, 1500); // 1.5 segundos de carga
+  };
+
+  if (loading) return <Loader />;
+
   return (
-    <section className="relative flex flex-col items-center justify-center min-h-[60vh] bg-gradient-to-br from-indigo-700 via-blue-600 to-sky-400 overflow-hidden">
+    <section className="relative flex flex-col items-center justify-center min-h-[80vh] bg-gradient-to-br from-indigo-700 via-blue-600 to-sky-400 overflow-hidden">
       {/* Fondo decorativo */}
       <div className="absolute inset-0 opacity-30 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white/60 via-indigo-200/40 to-transparent pointer-events-none" />
-      <div className="relative z-10 flex flex-col items-center text-center px-4 py-16">
-        <h1 className="text-4xl md:text-6xl font-extrabold text-white drop-shadow-lg mb-4 animate-fade-in">
+      <div className="relative z-10 flex flex-col items-center text-center px-4 py-16 w-full h-full justify-center">
+        <h1 className="text-4xl md:text-6xl font-extrabold text-white drop-shadow-lg mb-6 animate-fade-in">
           ¡Encuentra futbolistas para tu equipo!
         </h1>
-        <p className="text-lg md:text-2xl text-white/90 mb-8 max-w-2xl animate-fade-in delay-100">
+        <p className="text-lg md:text-2xl text-white/90 mb-10 max-w-2xl animate-fade-in delay-100">
           Reserva jugadores profesionales y amateurs en tu ciudad de forma fácil, segura y rápida.
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in delay-200">
-          <button className="bg-white text-indigo-700 font-bold px-8 py-3 rounded-lg shadow-lg hover:bg-indigo-50 hover:scale-105 transition transform duration-200">
+        <div className="flex flex-col sm:flex-row gap-6 justify-center animate-fade-in delay-200 w-full max-w-md mx-auto">
+          <button
+            className="bg-white text-indigo-700 font-bold px-8 py-4 rounded-lg shadow-lg hover:bg-indigo-50 hover:scale-105 transition transform duration-200 text-lg"
+            onClick={handleBuscar}
+          >
             Buscar jugadores
           </button>
-          <button className="bg-indigo-700 text-white font-bold px-8 py-3 rounded-lg shadow-lg border-2 border-white hover:bg-white hover:text-indigo-700 hover:scale-105 transition transform duration-200">
+          <button className="bg-indigo-700 text-white font-bold px-8 py-4 rounded-lg shadow-lg border-2 border-white hover:bg-white hover:text-indigo-700 hover:scale-105 transition transform duration-200 text-lg">
             ¿Cómo funciona?
           </button>
         </div>
