@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FiCheckCircle, FiAlertCircle, FiChevronRight, FiChevronLeft, FiUpload } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 
 const steps = [
   'Datos básicos',
@@ -41,6 +42,7 @@ function CreateTeamWizard() {
   const [success, setSuccess] = useState(false);
   const [redes, setRedes] = useState([]);
   const [nuevaRed, setNuevaRed] = useState({ tipo: '', usuario: '' });
+  const navigate = useNavigate();
 
   // Validaciones por paso
   const validateStep = () => {
@@ -122,6 +124,14 @@ function CreateTeamWizard() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-100 via-blue-50 to-sky-100 py-8 px-2">
       <div className="w-full max-w-xl bg-white rounded-2xl shadow-2xl p-8 relative animate-fade-in">
+        {/* Botón Volver */}
+        <button
+          onClick={() => navigate(-1)}
+          className="absolute left-4 top-4 md:static md:mb-4 flex items-center gap-2 bg-white/80 hover:bg-white text-indigo-700 font-semibold px-4 py-2 rounded-full shadow transition-all duration-200 backdrop-blur z-10 focus:outline-none"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+          Volver
+        </button>
         {/* Stepper visual */}
         <div className="flex items-center justify-center gap-2 mb-8">
           {steps.map((s, i) => (
