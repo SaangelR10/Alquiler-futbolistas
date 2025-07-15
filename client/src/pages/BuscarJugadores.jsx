@@ -1,6 +1,43 @@
 import React, { useState } from 'react';
 import PlayerMap from '../components/PlayerMap';
 import PlayerCard from '../components/PlayerCard';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// Estructura de departamentos y ciudades (muestra, escalable)
+const departamentosColombia = [
+  {
+    nombre: 'Cundinamarca',
+    ciudades: [
+      { nombre: 'Bogotá', lat: 4.711, lng: -74.0721, bounds: [[4.45, -74.25], [4.85, -73.95]] },
+      { nombre: 'Soacha', lat: 4.5794, lng: -74.2168, bounds: [[4.45, -74.35], [4.7, -74.1]] },
+      { nombre: 'Zipaquirá', lat: 5.0221, lng: -73.9992, bounds: [[4.95, -74.1], [5.08, -73.95]] },
+    ],
+  },
+  {
+    nombre: 'Antioquia',
+    ciudades: [
+      { nombre: 'Medellín', lat: 6.2442, lng: -75.5812, bounds: [[6.15, -75.7], [6.35, -75.45]] },
+      { nombre: 'Envigado', lat: 6.1706, lng: -75.5918, bounds: [[6.13, -75.65], [6.22, -75.54]] },
+      { nombre: 'Bello', lat: 6.3389, lng: -75.5626, bounds: [[6.28, -75.62], [6.38, -75.5]] },
+    ],
+  },
+  {
+    nombre: 'Valle del Cauca',
+    ciudades: [
+      { nombre: 'Cali', lat: 3.4516, lng: -76.532, bounds: [[3.35, -76.6], [3.55, -76.45]] },
+      { nombre: 'Palmira', lat: 3.5394, lng: -76.3036, bounds: [[3.48, -76.36], [3.6, -76.25]] },
+      { nombre: 'Buenaventura', lat: 3.8801, lng: -77.0312, bounds: [[3.8, -77.1], [3.95, -76.95]] },
+    ],
+  },
+  {
+    nombre: 'Atlántico',
+    ciudades: [
+      { nombre: 'Barranquilla', lat: 10.9685, lng: -74.7813, bounds: [[10.85, -74.9], [11.05, -74.65]] },
+      { nombre: 'Soledad', lat: 10.9184, lng: -74.7646, bounds: [[10.87, -74.82], [10.97, -74.7]] },
+      { nombre: 'Malambo', lat: 10.8592, lng: -74.7739, bounds: [[10.8, -74.82], [10.9, -74.72]] },
+    ],
+  },
+];
 
 const jugadoresEjemplo = [
   {
@@ -9,12 +46,13 @@ const jugadoresEjemplo = [
     posicion: 'Delantero',
     experiencia: 'Profesional',
     precio: 50,
-    ubicacion: 'Madrid',
+    ubicacion: 'Bogotá',
+    departamento: 'Cundinamarca',
     disponibilidad: 'Disponible',
     descripcion: 'Rápido, goleador y con gran visión de juego.',
     foto: 'https://randomuser.me/api/portraits/men/32.jpg',
-    lat: 40.4168,
-    lng: -3.7038,
+    lat: 4.711,
+    lng: -74.0721,
   },
   {
     id: 2,
@@ -22,12 +60,13 @@ const jugadoresEjemplo = [
     posicion: 'Portero',
     experiencia: 'Amateur',
     precio: 40,
-    ubicacion: 'Barcelona',
+    ubicacion: 'Medellín',
+    departamento: 'Antioquia',
     disponibilidad: 'Disponible',
     descripcion: 'Seguro bajo palos y gran juego aéreo.',
     foto: 'https://randomuser.me/api/portraits/men/45.jpg',
-    lat: 41.3874,
-    lng: 2.1686,
+    lat: 6.2442,
+    lng: -75.5812,
   },
   {
     id: 3,
@@ -35,32 +74,110 @@ const jugadoresEjemplo = [
     posicion: 'Defensa',
     experiencia: 'Semi-profesional',
     precio: 35,
-    ubicacion: 'Valencia',
+    ubicacion: 'Cali',
+    departamento: 'Valle del Cauca',
     disponibilidad: 'No disponible',
     descripcion: 'Fuerte, rápido y con gran anticipación.',
     foto: 'https://randomuser.me/api/portraits/men/52.jpg',
-    lat: 39.4699,
-    lng: -0.3763,
+    lat: 3.4516,
+    lng: -76.532,
   },
 ];
 
 const posiciones = ['Delantero', 'Mediocampista', 'Defensa', 'Portero'];
 
 const BuscarJugadores = () => {
+  const [filtroDepartamento, setFiltroDepartamento] = useState('');
+  const [filtroCiudad, setFiltroCiudad] = useState('');
+  const [busquedaCiudad, setBusquedaCiudad] = useState('');
   const [filtroPosicion, setFiltroPosicion] = useState('');
   const [filtroDisponibilidad, setFiltroDisponibilidad] = useState('');
-  const [filtroPrecio, setFiltroPrecio] = useState([0, 100]);
+  const [filtroPrecio, setFiltroPrecio] = useState([0, 100000]);
+  const [filtroNombre, setFiltroNombre] = useState('');
+  const [showSugerencias, setShowSugerencias] = useState(false);
   const [vista, setVista] = useState('tarjetas'); // 'tarjetas' o 'mapa'
 
+  // Función para limpiar filtros
+  const limpiarFiltros = () => {
+    setFiltroDepartamento('');
+    setFiltroCiudad('');
+    setBusquedaCiudad('');
+    setFiltroPosicion('');
+    setFiltroDisponibilidad('');
+    setFiltroPrecio([0, 100000]);
+    setFiltroNombre('');
+  };
+
+  // Filtrar ciudades según departamento y búsqueda
+  const ciudadesFiltradas = filtroDepartamento
+    ? departamentosColombia.find(dep => dep.nombre === filtroDepartamento)?.ciudades.filter(ciudad => ciudad.nombre.toLowerCase().includes(busquedaCiudad.toLowerCase())) || []
+    : [];
+
+  // Filtrar jugadores
   const jugadoresFiltrados = jugadoresEjemplo.filter(j =>
+    (!filtroNombre || j.nombre.toLowerCase().includes(filtroNombre.toLowerCase())) &&
+    (!filtroDepartamento || j.departamento === filtroDepartamento) &&
+    (!filtroCiudad || j.ubicacion === filtroCiudad) &&
     (!filtroPosicion || j.posicion === filtroPosicion) &&
     (!filtroDisponibilidad || j.disponibilidad === filtroDisponibilidad) &&
     (j.precio >= filtroPrecio[0] && j.precio <= filtroPrecio[1])
   );
 
+  // Obtener ciudad seleccionada para centrar/limitar el mapa
+  const ciudadSeleccionada = ciudadesFiltradas.find(c => c.nombre === filtroCiudad);
+
+  // Determinar si hay filtros aplicados
+  const filtrosAplicados =
+    filtroNombre || filtroDepartamento || filtroCiudad || busquedaCiudad || filtroPosicion || filtroDisponibilidad || filtroPrecio[0] !== 0 || filtroPrecio[1] !== 100000;
+
+  // Sugerencias de nombres de jugadores
+  const sugerenciasNombres = filtroNombre
+    ? jugadoresEjemplo
+        .map(j => j.nombre)
+        .filter(nombre => nombre.toLowerCase().includes(filtroNombre.toLowerCase()))
+        .slice(0, 6)
+    : [];
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 mt-24">
       <h1 className="text-3xl font-bold text-indigo-700 mb-6 text-center">Buscar jugadores</h1>
+      {/* Filtro de búsqueda por nombre */}
+      <div className="flex justify-center mb-4 w-full">
+        <div className="relative w-full max-w-md">
+          <input
+            type="text"
+            className="border rounded-lg px-4 py-2 w-full text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 pl-10"
+            placeholder="Buscar por nombre de jugador..."
+            value={filtroNombre}
+            onChange={e => {
+              setFiltroNombre(e.target.value);
+              setShowSugerencias(true);
+            }}
+            onFocus={() => setShowSugerencias(true)}
+            onBlur={() => setTimeout(() => setShowSugerencias(false), 120)}
+          />
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+          </span>
+          {/* Lista de sugerencias */}
+          {showSugerencias && sugerenciasNombres.length > 0 && (
+            <div className="absolute z-30 left-0 right-0 bg-white border border-indigo-100 rounded-lg shadow mt-1 max-h-56 overflow-y-auto animate-fade-in">
+              {sugerenciasNombres.map(nombre => (
+                <div
+                  key={nombre}
+                  className="px-4 py-2 cursor-pointer hover:bg-indigo-50 text-indigo-700 text-sm"
+                  onMouseDown={() => {
+                    setFiltroNombre(nombre);
+                    setShowSugerencias(false);
+                  }}
+                >
+                  {nombre}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
       {/* Toggle de vista */}
       <div className="flex justify-center mb-8">
         <div className="inline-flex rounded-xl bg-indigo-50 p-1 shadow border border-indigo-100">
@@ -80,46 +197,171 @@ const BuscarJugadores = () => {
           </button>
         </div>
       </div>
-      {/* Filtros */}
-      <div className="bg-white rounded-xl shadow p-4 flex flex-col md:flex-row gap-4 mb-8 items-center justify-between">
+      {/* Filtro profesional departamento/ciudad */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6 items-center justify-center w-full">
         <select
-          className="border rounded-lg px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          value={filtroPosicion}
-          onChange={e => setFiltroPosicion(e.target.value)}
+          className="border rounded-lg px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-56 md:w-60"
+          value={filtroDepartamento}
+          onChange={e => {
+            setFiltroDepartamento(e.target.value);
+            setFiltroCiudad('');
+            setBusquedaCiudad('');
+          }}
         >
-          <option value="">Todas las posiciones</option>
-          {posiciones.map(pos => (
-            <option key={pos} value={pos}>{pos}</option>
+          <option value="">Selecciona un departamento</option>
+          {departamentosColombia.map(dep => (
+            <option key={dep.nombre} value={dep.nombre}>{dep.nombre}</option>
           ))}
         </select>
-        <select
-          className="border rounded-lg px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          value={filtroDisponibilidad}
-          onChange={e => setFiltroDisponibilidad(e.target.value)}
-        >
-          <option value="">Todas las disponibilidades</option>
-          <option value="Disponible">Disponible</option>
-          <option value="No disponible">No disponible</option>
-        </select>
-        <div className="flex items-center gap-2">
-          <span className="text-gray-600">Precio:</span>
+        <div className="relative w-56 md:w-60">
           <input
-            type="range"
-            min={0}
-            max={100}
-            value={filtroPrecio[0]}
-            onChange={e => setFiltroPrecio([+e.target.value, filtroPrecio[1]])}
-            className="accent-indigo-600"
+            type="text"
+            className="border rounded-lg px-4 py-2 w-full text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder={filtroCiudad ? filtroCiudad : "Buscar ciudad..."}
+            value={busquedaCiudad}
+            onChange={e => setBusquedaCiudad(e.target.value)}
+            disabled={!filtroDepartamento}
+            style={filtroCiudad ? { fontWeight: 'bold', color: '#3730a3', background: '#eef2ff' } : {}}
           />
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={filtroPrecio[1]}
-            onChange={e => setFiltroPrecio([filtroPrecio[0], +e.target.value])}
-            className="accent-indigo-600"
-          />
-          <span className="text-indigo-700 font-bold">{filtroPrecio[0]}€ - {filtroPrecio[1]}€</span>
+          <select
+            className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+            value={filtroCiudad}
+            onChange={e => {
+              setFiltroCiudad(e.target.value);
+              setBusquedaCiudad('');
+            }}
+            disabled={!filtroDepartamento}
+          >
+            <option value="">Selecciona una ciudad</option>
+            {ciudadesFiltradas.map(ciudad => (
+              <option key={ciudad.nombre} value={ciudad.nombre}>{ciudad.nombre}</option>
+            ))}
+          </select>
+          {/* Lista visible de ciudades filtradas */}
+          {filtroDepartamento && busquedaCiudad && (
+            <div className="absolute z-20 bg-white border rounded-lg shadow w-full mt-1 max-h-40 overflow-y-auto">
+              {ciudadesFiltradas.length === 0 ? (
+                <div className="px-4 py-2 text-gray-400">No hay ciudades</div>
+              ) : (
+                ciudadesFiltradas.map(ciudad => (
+                  <div
+                    key={ciudad.nombre}
+                    className={`px-4 py-2 hover:bg-indigo-50 cursor-pointer ${filtroCiudad === ciudad.nombre ? 'bg-indigo-100 font-bold' : ''}`}
+                    onClick={() => {
+                      setFiltroCiudad(ciudad.nombre);
+                      setBusquedaCiudad('');
+                    }}
+                  >
+                    {ciudad.nombre}
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+      {/* Filtros existentes y botón limpiar filtros */}
+      <div className="bg-white rounded-xl shadow p-4 flex flex-col gap-2 mb-8 w-full items-center">
+        <div className="flex flex-col md:flex-row md:items-center md:gap-4 gap-2 w-full justify-center">
+          <div className="flex-1 flex flex-col min-w-[140px] max-w-[220px]">
+            <label className="text-sm font-semibold text-indigo-700 mb-1">Posición</label>
+            <select
+              className="border rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              value={filtroPosicion}
+              onChange={e => setFiltroPosicion(e.target.value)}
+            >
+              <option value="">Todas las posiciones</option>
+              {posiciones.map(pos => (
+                <option key={pos} value={pos}>{pos}</option>
+              ))}
+            </select>
+            <span className="text-xs text-gray-500 mt-1">Filtra por la posición.</span>
+          </div>
+          <div className="flex-1 flex flex-col min-w-[140px] max-w-[220px]">
+            <label className="text-sm font-semibold text-indigo-700 mb-1">Disponibilidad</label>
+            <select
+              className="border rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              value={filtroDisponibilidad}
+              onChange={e => setFiltroDisponibilidad(e.target.value)}
+            >
+              <option value="">Todas</option>
+              <option value="Disponible">Disponible</option>
+              <option value="No disponible">No disponible</option>
+            </select>
+            <span className="text-xs text-gray-500 mt-1">Solo jugadores disponibles.</span>
+          </div>
+          <div className="flex-1 flex flex-col min-w-[220px] max-w-[320px]">
+            <label className="text-sm font-semibold text-indigo-700 mb-1">Precio por hora (€)</label>
+            <div className="flex items-center gap-2 flex-wrap md:flex-nowrap">
+              <input
+                type="number"
+                min={0}
+                max={filtroPrecio[1]}
+                value={filtroPrecio[0]}
+                onChange={e => {
+                  const val = Math.max(0, Math.min(Number(e.target.value), filtroPrecio[1]));
+                  setFiltroPrecio([val, filtroPrecio[1]]);
+                }}
+                className="w-16 border rounded px-2 py-1 text-center text-indigo-700 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                placeholder="Mín"
+              />
+              <input
+                type="range"
+                min={0}
+                max={100000}
+                value={filtroPrecio[0]}
+                onChange={e => setFiltroPrecio([+e.target.value, filtroPrecio[1]])}
+                className="accent-indigo-600 w-24"
+              />
+              <span className="text-gray-600">-</span>
+              <input
+                type="number"
+                min={filtroPrecio[0]}
+                max={100000}
+                value={filtroPrecio[1]}
+                onChange={e => {
+                  const val = Math.max(filtroPrecio[0], Math.min(Number(e.target.value), 100000));
+                  setFiltroPrecio([filtroPrecio[0], val]);
+                }}
+                className="w-16 border rounded px-2 py-1 text-center text-indigo-700 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                placeholder="Máx"
+              />
+              <input
+                type="range"
+                min={0}
+                max={100000}
+                value={filtroPrecio[1]}
+                onChange={e => setFiltroPrecio([filtroPrecio[0], +e.target.value])}
+                className="accent-indigo-600 w-24"
+              />
+            </div>
+            <span className="text-xs text-gray-500 mt-1">Puedes escribir los valores o usar las barras.</span>
+          </div>
+          {/* Botón limpiar filtros */}
+          <div className="flex items-center justify-end min-w-[140px] md:ml-8 mt-0">
+            <button
+              onClick={limpiarFiltros}
+              className={`bg-white border border-indigo-200 text-indigo-700 font-semibold w-44 py-2 rounded-lg shadow hover:bg-indigo-50 hover:border-indigo-400 transition-all duration-200 flex items-center justify-center gap-2 relative ${filtrosAplicados ? 'pl-2' : ''}`}
+              title="Limpiar todos los filtros"
+              style={{ alignSelf: 'flex-end' }}
+            >
+              <AnimatePresence>
+                {filtrosAplicados && (
+                  <motion.span
+                    key="x-icon"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    transition={{ duration: 0.25 }}
+                    className="flex items-center"
+                  >
+                    <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                  </motion.span>
+                )}
+              </AnimatePresence>
+              <span className="hidden sm:inline">Limpiar filtros</span>
+            </button>
+          </div>
         </div>
       </div>
       {/* Vista seleccionada */}
@@ -133,7 +375,7 @@ const BuscarJugadores = () => {
         </div>
       ) : (
         <div className="max-w-4xl mx-auto">
-          <PlayerMap jugadores={jugadoresFiltrados} />
+          <PlayerMap jugadores={jugadoresFiltrados} ciudadSeleccionada={ciudadSeleccionada} />
         </div>
       )}
     </div>

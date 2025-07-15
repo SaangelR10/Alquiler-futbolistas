@@ -14,6 +14,7 @@ const Navbar = () => {
           <div className="hidden md:flex space-x-8">
             <Link to="/" className="text-gray-700 hover:text-indigo-700 font-medium transition">Inicio</Link>
             <Link to="/buscar" className="text-gray-700 hover:text-indigo-700 font-medium transition">Buscar jugadores</Link>
+            <Link to="/torneos" className="text-gray-700 hover:text-indigo-700 font-medium transition">Torneos</Link>
             <Link to="/como-funciona" className="text-gray-700 hover:text-indigo-700 font-medium transition">¿Cómo funciona?</Link>
           </div>
           {/* Botones */}

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import ModalReservaStepper from '../components/ModalReservaStepper';
 
 const jugador = {
   nombre: 'Juan Pérez',
@@ -29,6 +30,7 @@ const playerIcon = new L.Icon({
 
 const PerfilJugador = () => {
   const [tab, setTab] = useState('info');
+  const [openReserva, setOpenReserva] = useState(false);
   return (
     <div className="max-w-3xl mx-auto px-4 py-10 mt-24 bg-white rounded-2xl shadow-xl">
       {/* Header visual */}
@@ -44,7 +46,7 @@ const PerfilJugador = () => {
             ))}
           </div>
           <div className="text-2xl font-bold text-green-600 mb-2">{jugador.precio} €/hora</div>
-          <button className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition">Reservar</button>
+          <button onClick={() => setOpenReserva(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition">Reservar</button>
         </div>
       </div>
       {/* Tabs */}
@@ -98,6 +100,7 @@ const PerfilJugador = () => {
       <div className="mt-8 text-center">
         <button className="bg-white border border-indigo-600 text-indigo-700 font-semibold py-2 px-6 rounded-lg shadow hover:bg-indigo-50 transition">Contactar jugador</button>
       </div>
+      <ModalReservaStepper jugador={jugador} abierto={openReserva} onClose={() => setOpenReserva(false)} />
     </div>
   );
 };

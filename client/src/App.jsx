@@ -7,6 +7,7 @@ import PerfilJugador from './pages/PerfilJugador';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ComoFunciona from './pages/ComoFunciona';
+import Torneos from './pages/Torneos';
 import Footer from './components/Footer';
 import Loader from './components/Loader';
 import './index.css';
@@ -35,6 +36,7 @@ function AppContent() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/como-funciona" element={<ComoFunciona />} />
+        <Route path="/torneos" element={<Torneos />} />
       </Routes>
       {!hideNavFooter && <Footer />}
     </>

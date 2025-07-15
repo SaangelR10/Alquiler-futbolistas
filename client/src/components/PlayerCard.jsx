@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import ModalReservaStepper from './ModalReservaStepper';
 
 const PlayerCard = ({ jugador }) => {
+  const [openReserva, setOpenReserva] = useState(false);
   return (
     <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300 w-full max-w-xs mx-auto flex flex-col">
       <img
@@ -21,15 +23,13 @@ const PlayerCard = ({ jugador }) => {
           <p className="text-gray-700 text-sm mb-3 line-clamp-2">{jugador.descripcion}</p>
         </div>
         <div className="flex gap-2 mt-4">
-          <button className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition">Reservar</button>
+          <button onClick={() => setOpenReserva(true)} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition">Reservar</button>
           <Link to={`/jugador/${jugador.id}`} className="flex-1 border border-indigo-600 text-indigo-700 font-semibold py-2 px-4 rounded-lg hover:bg-indigo-50 transition text-center">Ver perfil</Link>
         </div>
       </div>
+      <ModalReservaStepper jugador={jugador} abierto={openReserva} onClose={() => setOpenReserva(false)} />
     </div>
   );
 };
-
-// Ejemplo de uso:
-// <PlayerCard jugador={{ nombre: 'Juan Pérez', posicion: 'Delantero', experiencia: 'Profesional', precio: 50, ubicacion: 'Madrid', disponibilidad: 'Disponible', descripcion: 'Rápido, goleador y con gran visión de juego.', foto: '...' }} />
 
 export default PlayerCard; 
