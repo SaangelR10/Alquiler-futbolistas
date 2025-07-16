@@ -44,13 +44,11 @@ const Navbar = () => {
     <>
       {/* Navbar superior solo visible en desktop */}
       <nav className={`fixed w-full z-[9999] top-0 left-0 bg-transparent transition-transform duration-300 ease-in-out ${visible ? 'translate-y-0' : '-translate-y-full'} md:flex hidden`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 pt-4 w-full">
           <div className="flex items-center justify-between w-full">
             {/* Logo */}
-            <div className="flex items-center min-w-0 justify-start">
-              <Link
-                to="/"
-                className="text-3xl md:text-4xl font-extrabold tracking-tight whitespace-nowrap select-none px-2 py-1"
+            <div className="flex items-center min-w-0 justify-start pr-6">
+              <Link to="/" className="text-3xl md:text-4xl font-extrabold tracking-tight whitespace-nowrap select-none px-2 py-1"
                 style={
                   rutasFondoBlanco.includes(location.pathname)
                     ? {
@@ -73,14 +71,14 @@ const Navbar = () => {
             </div>
             {/* Menú centrado respecto al logo */}
             <div className="flex-1 flex justify-center">
-              <div className="flex items-center bg-white/80 backdrop-blur-md shadow-lg rounded-full px-4 py-1 space-x-6 border border-indigo-100">
-                <Link to="/" className="text-indigo-700 font-semibold px-3 py-1 rounded-full hover:bg-indigo-50 transition">Inicio</Link>
-                <Link to="/buscar" className="text-indigo-700 font-semibold px-3 py-1 rounded-full hover:bg-indigo-50 transition">Buscar</Link>
-                <Link to="/como-funciona" className="text-indigo-700 font-semibold px-3 py-1 rounded-full hover:bg-indigo-50 transition">¿Cómo funciona?</Link>
+              <div className="flex items-center bg-white/80 backdrop-blur-md shadow-lg rounded-full px-6 py-1.5 space-x-6 border border-indigo-100">
+                <Link to="/" className="text-indigo-700 font-semibold px-4 py-1 rounded-full hover:bg-indigo-50 transition">Inicio</Link>
+                <Link to="/buscar" className="text-indigo-700 font-semibold px-4 py-1 rounded-full hover:bg-indigo-50 transition">Buscar</Link>
+                <Link to="/como-funciona" className="text-indigo-700 font-semibold px-4 py-1 rounded-full hover:bg-indigo-50 transition">¿Cómo funciona?</Link>
               </div>
             </div>
             {/* Botones de sesión */}
-            <div className="flex items-center space-x-3 min-w-0 justify-end">
+            <div className="flex items-center space-x-4 min-w-0 justify-end pl-6">
               <Link to="/login" className="px-5 py-2 rounded-full font-semibold text-indigo-700 border border-indigo-200 bg-white/80 backdrop-blur-md hover:bg-indigo-50 transition shadow">Iniciar sesión</Link>
               <Link to="/register" className="px-5 py-2 rounded-full font-semibold text-white bg-indigo-700 hover:bg-indigo-800 shadow transition">Registrarse</Link>
             </div>
