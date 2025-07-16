@@ -45,7 +45,7 @@ const Tribuna = () => {
   const { isLoggedIn } = useAuth();
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center relative overflow-x-hidden">
+    <div className="min-h-screen h-auto w-full flex flex-col items-center relative overflow-y-auto touch-auto">
       {/* Fondo animado de gradiente */}
       <div className="fixed inset-0 -z-10 w-full h-full animate-gradient-move bg-gradient-to-br from-blue-400 via-blue-300 to-sky-300 transition-colors duration-1000" style={{backgroundSize:'200% 200%'}} />
       <style>{`
@@ -78,58 +78,63 @@ const Tribuna = () => {
       </div>
       {/* Espaciado para la barra superior */}
       <div className="h-16" />
-      {/* Feed principal */}
-      <div className="w-full max-w-md mx-auto flex flex-col gap-6 pb-32">
-        {/* Card para crear publicación */}
-        <div className="bg-white border-2 border-green-500 rounded-2xl shadow-lg p-4 flex items-center gap-3 mt-2">
-          <FaUserCircle className="text-3xl text-white/80" />
-          <input type="text" placeholder="¿Qué quieres compartir?" className="flex-1 bg-transparent text-white placeholder:text-white/60 focus:outline-none text-base px-2" />
-          <button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full p-2 shadow transition"><FaPlus /></button>
-        </div>
-        {/* Feed de publicaciones */}
-        {publicacionesMock.map(pub => (
-          <motion.div key={pub.id} className="bg-white border-2 border-green-500 rounded-2xl shadow-lg overflow-hidden flex flex-col" initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-            <div className="flex items-center gap-3 px-4 pt-4">
-              <FaUserCircle className="text-2xl text-white/80" />
-              <div>
-                <div className="text-white font-bold text-sm">{pub.usuario}</div>
-                <div className="text-xs text-white/50">{pub.fecha}</div>
+      {/* Feed principal solo visible si no hay paneles abiertos */}
+      {!showPerfil && !showChat && (
+        <div className="w-full max-w-md mx-auto flex flex-col gap-6 pb-32">
+          {/* Card para crear publicación */}
+          <div className="bg-white border-2 border-green-500 rounded-2xl shadow-lg p-4 flex items-center gap-3 mt-2">
+            <FaUserCircle className="text-3xl text-white/80" />
+            <input type="text" placeholder="¿Qué quieres compartir?" className="flex-1 bg-transparent text-white placeholder:text-white/60 focus:outline-none text-base px-2" />
+            <button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full p-2 shadow transition"><FaPlus /></button>
+          </div>
+          {/* Feed de publicaciones */}
+          {publicacionesMock.map(pub => (
+            <motion.div key={pub.id} className="bg-white border-2 border-green-500 rounded-2xl shadow-lg overflow-hidden flex flex-col" initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+              <div className="flex items-center gap-3 px-4 pt-4">
+                <FaUserCircle className="text-2xl text-white/80" />
+                <div>
+                  <div className="text-white font-bold text-sm">{pub.usuario}</div>
+                  <div className="text-xs text-white/50">{pub.fecha}</div>
+                </div>
               </div>
-            </div>
-            {pub.tipo === 'video' && (
-              <video src={pub.contenido} controls autoPlay loop className="w-full h-[340px] object-cover bg-black mt-3" />
-            )}
-            {pub.tipo === 'imagen' && (
-              <img src={pub.contenido} alt="Publicación" className="w-full h-[340px] object-cover bg-black mt-3" />
-            )}
-            {pub.tipo === 'texto' && (
-              <div className="text-white text-lg px-4 py-8">{pub.descripcion}</div>
-            )}
-            {pub.tipo !== 'texto' && (
-              <div className="text-white text-base px-4 py-3">{pub.descripcion}</div>
-            )}
-            {/* Acciones */}
-            <div className="flex items-center gap-6 px-4 pb-4 pt-2 border-t border-[#134e4a]/40">
-              <button className="text-white/80 hover:text-emerald-400 font-bold transition">Me gusta</button>
-              <button className="text-white/80 hover:text-blue-400 font-bold transition">Comentar</button>
-              <button className="text-white/80 hover:text-indigo-400 font-bold transition">Compartir</button>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-      {/* Botón flotante para crear publicación */}
-      <button className="fixed bottom-24 right-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full p-4 shadow-2xl z-40 md:hidden flex items-center justify-center text-3xl transition-all duration-200">
-        <FaPlus />
-      </button>
+              {pub.tipo === 'video' && (
+                <video src={pub.contenido} controls autoPlay loop className="w-full h-[340px] object-cover bg-black mt-3" />
+              )}
+              {pub.tipo === 'imagen' && (
+                <img src={pub.contenido} alt="Publicación" className="w-full h-[340px] object-cover bg-black mt-3" />
+              )}
+              {pub.tipo === 'texto' && (
+                <div className="text-white text-lg px-4 py-8">{pub.descripcion}</div>
+              )}
+              {pub.tipo !== 'texto' && (
+                <div className="text-white text-base px-4 py-3">{pub.descripcion}</div>
+              )}
+              {/* Acciones */}
+              <div className="flex items-center gap-6 px-4 pb-4 pt-2 border-t border-[#134e4a]/40">
+                <button className="text-white/80 hover:text-emerald-400 font-bold transition">Me gusta</button>
+                <button className="text-white/80 hover:text-blue-400 font-bold transition">Comentar</button>
+                <button className="text-white/80 hover:text-indigo-400 font-bold transition">Compartir</button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+      {/* Botón flotante para crear publicación solo si no hay paneles abiertos */}
+      {!showPerfil && !showChat && (
+        <button className="fixed bottom-24 right-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full p-4 shadow-2xl z-40 md:hidden flex items-center justify-center text-3xl transition-all duration-200">
+          <FaPlus />
+        </button>
+      )}
       {/* Panel de perfil a pantalla completa con lógica de login */}
       <AnimatePresence>
         {showPerfil && (
-          <motion.div initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="fixed inset-0 w-full h-full bg-[#1e293b] shadow-2xl z-50 p-0 flex flex-col justify-center items-center">
-            {/* Contenido difuminado si no logueado */}
-            <div className={`absolute inset-0 w-full h-full transition-all duration-300 ${!isLoggedIn ? 'backdrop-blur-[6px] brightness-75' : ''}`}></div>
-            {/* Overlay premium si no logueado */}
+          <motion.div initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="fixed inset-0 w-full h-full bg-[#1e293b] shadow-2xl z-[99999] p-0 flex flex-col overflow-y-auto touch-auto">
+            {/* Botón cerrar siempre visible y por encima */}
+            <button onClick={() => setShowPerfil(false)} className="absolute top-6 right-8 text-white text-4xl font-bold hover:text-blue-300 transition-all duration-200 focus:outline-none animate-pulse-slow z-30">×</button>
+            {/* Blurry y overlay: mismo diseño en todas las vistas */}
+            {!isLoggedIn && <div className="absolute inset-0 w-full h-full transition-all duration-300 backdrop-blur-[6px] brightness-75 z-10" />}
             {!isLoggedIn && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+              <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
                 <div className="bg-white/90 rounded-2xl shadow-2xl px-8 py-8 flex flex-col items-center animate-fade-in-up border border-blue-200">
                   <User className="w-12 h-12 text-blue-600 mb-2" />
                   <div className="text-xl font-bold text-blue-900 mb-2 text-center">Necesitas iniciar sesión o registrarte</div>
@@ -141,11 +146,9 @@ const Tribuna = () => {
                 </div>
               </div>
             )}
-            {/* Botón cerrar siempre visible */}
-            <button onClick={() => setShowPerfil(false)} className="absolute top-6 right-8 text-white text-4xl font-bold hover:text-blue-300 transition-all duration-200 focus:outline-none animate-pulse-slow z-20">×</button>
             {/* Contenido real solo si logueado */}
             {isLoggedIn && (
-              <div className="flex flex-col items-center gap-2 z-10 mt-20">
+              <div className="flex flex-col items-center gap-2 z-20 mt-20">
                 <User className="w-16 h-16 text-white/80 mb-2" />
                 <div className="text-white font-bold text-lg">Nombre Usuario</div>
                 <div className="text-blue-400 font-semibold text-sm">@usuario</div>
@@ -162,12 +165,16 @@ const Tribuna = () => {
       {/* Panel lateral de chat mejorado con lógica de login */}
       <AnimatePresence>
         {showChat && (
-          <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="fixed inset-0 w-full h-full bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700/95 shadow-2xl z-[99999] p-0 flex flex-col">
-            {/* Contenido difuminado si no logueado */}
-            <div className={`absolute inset-0 w-full h-full transition-all duration-300 ${!isLoggedIn ? 'backdrop-blur-[6px] brightness-75' : ''}`}></div>
-            {/* Overlay premium si no logueado */}
+          <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="fixed inset-0 w-full h-full bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700/95 shadow-2xl z-[99999] p-0 flex flex-col overflow-y-auto touch-auto">
+            {/* Botón cerrar siempre visible y por encima */}
+            <div className="flex items-center justify-between px-8 py-6 border-b border-white/10 z-30">
+              <div className="text-white font-bold text-2xl tracking-wide">Chats</div>
+              <button onClick={() => setShowChat(false)} className="text-white text-4xl font-bold hover:text-blue-300 transition-all duration-200 focus:outline-none animate-pulse-slow">×</button>
+            </div>
+            {/* Blurry y overlay: mismo diseño en todas las vistas */}
+            {!isLoggedIn && <div className="absolute inset-0 w-full h-full transition-all duration-300 backdrop-blur-[6px] brightness-75 z-10" />}
             {!isLoggedIn && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+              <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
                 <div className="bg-white/90 rounded-2xl shadow-2xl px-8 py-8 flex flex-col items-center animate-fade-in-up border border-blue-200">
                   <MessageCircle className="w-12 h-12 text-blue-600 mb-2" />
                   <div className="text-xl font-bold text-blue-900 mb-2 text-center">Necesitas iniciar sesión o registrarte</div>
@@ -179,14 +186,9 @@ const Tribuna = () => {
                 </div>
               </div>
             )}
-            {/* Botón cerrar siempre visible */}
-            <div className="flex items-center justify-between px-8 py-6 border-b border-white/10 z-20">
-              <div className="text-white font-bold text-2xl tracking-wide">Chats</div>
-              <button onClick={() => setShowChat(false)} className="text-white text-4xl font-bold hover:text-blue-300 transition-all duration-200 focus:outline-none animate-pulse-slow">×</button>
-            </div>
             {/* Contenido real solo si logueado */}
             {isLoggedIn && (
-              <div className="flex-1 flex flex-col items-center justify-center text-white/70 text-lg z-10">
+              <div className="flex-1 flex flex-col items-center justify-center text-white/70 text-lg z-20">
                 (Próximamente: lista de chats)
               </div>
             )}

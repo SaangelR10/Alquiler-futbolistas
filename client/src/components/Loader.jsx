@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Lottie from 'lottie-react';
 import ball from '../assets/lottie/ball.json';
 
@@ -12,18 +12,36 @@ const FireBallLoader = () => (
 );
 
 const Loader = () => {
-  // Alternar entre el Loader clásico (img balón con fuego) y el Lottie de ball.json
   const [showFire, setShowFire] = useState(() => {
     const last = window.sessionStorage.getItem('lastLoaderType');
     return last !== 'fire';
   });
+  const audioRef = useRef(null);
 
   useEffect(() => {
     window.sessionStorage.setItem('lastLoaderType', showFire ? 'fire' : 'ball');
   }, [showFire]);
 
+  useEffect(() => {
+    // Reproducir el silbato al montar y bajar el volumen
+    if (audioRef.current) {
+      audioRef.current.volume = 0.3;
+      try {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch(() => {});
+      } catch (e) {}
+    }
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    };
+  }, []);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-indigo-700 via-blue-600 to-sky-400">
+      <audio ref={audioRef} src={require('../assets/sounds/whistle.mp3')} preload="auto" />
       <div className="flex flex-col items-center">
         <div className="w-24 h-24 mb-6">
           {showFire ? (
