@@ -95,7 +95,7 @@ function AppContent() {
         } />
         <Route path="/buscar" element={<BuscarCentral />} />
         <Route path="/buscar/jugadores" element={<BuscarJugadores />} />
-        <Route path="/buscar/equipos" element={<BuscarEquipos />} />
+        <Route path="/buscar/equipos" element={<BuscarEquipos key={location.pathname + location.key} />} />
         <Route path="/buscar/torneos" element={<Torneos />} />
         <Route path="/jugador/:id" element={<PerfilJugador />} />
         <Route path="/login" element={<Login />} />
