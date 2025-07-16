@@ -36,17 +36,18 @@ const FeedPost = ({ post, onShowComments }) => {
         </div>
         <div className="px-4 pb-2 text-blue-900 text-base font-medium">{post.descripcion}</div>
         {/* Acciones sociales tipo TikTok */}
-        <div className="absolute right-4 bottom-24 flex flex-col items-center gap-6 z-20">
-          <button onClick={handleLike} className="group bg-white/90 hover:bg-pink-100 rounded-full p-3 shadow-xl transition-all flex flex-col items-center border-2 border-pink-200 hover:scale-110 focus:outline-none">
-            {liked ? <FaHeart className="text-pink-500 text-2xl animate-bounce" /> : <FaRegHeart className="text-gray-700 text-2xl group-hover:text-pink-500 transition" />}
+        <div className="absolute right-4 bottom-8 flex flex-col items-center gap-7 z-20">
+          {/* Glow y sombra para resaltar los iconos */}
+          <button onClick={handleLike} className="group transition-all flex flex-col items-center hover:scale-125 focus:outline-none">
+            {liked ? <FaHeart className="text-pink-500 text-3xl animate-bounce drop-shadow-lg" style={{filter:'drop-shadow(0 0 8px #f472b6)'}} /> : <FaRegHeart className="text-gray-700 text-3xl group-hover:text-pink-500 transition drop-shadow-lg" style={{filter:'drop-shadow(0 0 8px #f472b6)'}} />}
             <span className="text-xs font-bold text-pink-600 mt-1 drop-shadow">{likes}</span>
           </button>
-          <button onClick={onShowComments} className="group bg-white/90 hover:bg-blue-100 rounded-full p-3 shadow-xl transition-all flex flex-col items-center border-2 border-blue-200 hover:scale-110 focus:outline-none">
-            <FaCommentDots className="text-blue-600 text-2xl group-hover:text-blue-800 transition" />
+          <button onClick={onShowComments} className="group transition-all flex flex-col items-center hover:scale-125 focus:outline-none">
+            <FaCommentDots className="text-blue-600 text-3xl group-hover:text-blue-800 transition drop-shadow-lg" style={{filter:'drop-shadow(0 0 8px #60a5fa)'}} />
             <span className="text-xs font-bold text-blue-700 mt-1 drop-shadow">{post.comentarios || 0}</span>
           </button>
-          <button className="group bg-white/90 hover:bg-green-100 rounded-full p-3 shadow-xl transition-all flex flex-col items-center border-2 border-green-200 hover:scale-110 focus:outline-none">
-            <FaShareAlt className="text-green-600 text-2xl group-hover:text-green-800 transition" />
+          <button className="group transition-all flex flex-col items-center hover:scale-125 focus:outline-none">
+            <FaShareAlt className="text-green-600 text-3xl group-hover:text-green-800 transition drop-shadow-lg" style={{filter:'drop-shadow(0 0 8px #34d399)'}} />
             <span className="text-xs font-bold text-green-700 mt-1 drop-shadow">{post.compartidos || 0}</span>
           </button>
         </div>

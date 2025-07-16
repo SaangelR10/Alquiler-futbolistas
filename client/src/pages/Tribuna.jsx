@@ -155,9 +155,19 @@ const Tribuna = () => {
             </div>
           ) : (
             <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 bg-white/70 backdrop-blur-lg rounded-2xl px-6 py-3 flex flex-col items-center shadow-lg animate-fade-in-up border border-blue-200">
-              {/* SVG premium de dedo deslizando */}
+              {/* SVG mano lateral con flecha curva de swipe */}
               <span className="mb-1">
-                <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="38" height="38" rx="12" fill="#f5f5f7"/><path d="M19 10C19 8.89543 19.8954 8 21 8C22.1046 8 23 8.89543 23 10V22" stroke="#2563eb" strokeWidth="2.2" strokeLinecap="round"/><path d="M23 22L21 20L19 22" stroke="#2563eb" strokeWidth="2.2" strokeLinecap="round"/><circle cx="21" cy="10" r="2" fill="#2563eb"/></svg>
+                <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="38" height="38" rx="12" fill="#f5f5f7"/>
+                  <path d="M13 25C13 22 17 22 17 25V28C17 29.1046 17.8954 30 19 30C20.1046 30 21 29.1046 21 28V18C21 16.8954 21.8954 16 23 16C24.1046 16 25 16.8954 25 18V28" stroke="#2563eb" strokeWidth="2.2" strokeLinecap="round"/>
+                  <path d="M19 13C19 11.3431 20.3431 10 22 10C23.6569 10 25 11.3431 25 13V16" stroke="#2563eb" strokeWidth="2.2" strokeLinecap="round"/>
+                  <path d="M29 22C31 24 31 28 29 30" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" fill="none"/>
+                  <path d="M29 30L27 28" stroke="#2563eb" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M29 30L31 28" stroke="#2563eb" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M9 16C7 18 7 22 9 24" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" fill="none"/>
+                  <path d="M9 24L7 22" stroke="#2563eb" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M9 24L11 22" stroke="#2563eb" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
               </span>
               <span className="text-blue-900 font-semibold text-sm">Desliza con el dedo</span>
             </div>
