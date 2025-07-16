@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaUserCircle, FaComments, FaPlus } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, MessageCircle } from 'lucide-react';
 import { usePanel } from '../contexts/PanelContext';
 import { useAuth } from '../contexts/AuthContext';
+import FeedPost from '../components/FeedPost';
+import { useSwipeable } from 'react-swipeable';
 
 // Mock de publicaciones (en el futuro vendrán del backend)
 const publicacionesMock = [
@@ -43,6 +45,28 @@ const Tribuna = () => {
   // const [showChat, setShowChat] = useState(false);
   const { showPerfil, setShowPerfil, showChat, setShowChat } = usePanel();
   const { isLoggedIn } = useAuth();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [showComments, setShowComments] = useState(false);
+
+  const isMobile = window.innerWidth < 768;
+
+  useEffect(() => {
+    if (!isMobile) {
+      const handleKeyDown = (e) => {
+        if (e.key === 'ArrowUp') setCurrentIndex(i => Math.max(i - 1, 0));
+        if (e.key === 'ArrowDown') setCurrentIndex(i => Math.min(i + 1, publicacionesMock.length - 1));
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, []);
+
+  const handlers = isMobile ? useSwipeable({
+    onSwipedUp: () => setCurrentIndex(i => Math.min(i + 1, publicacionesMock.length - 1)),
+    onSwipedDown: () => setCurrentIndex(i => Math.max(i - 1, 0)),
+    trackMouse: false,
+    preventDefaultTouchmoveEvent: true,
+  }) : {};
 
   return (
     <div className="min-h-screen h-auto w-full flex flex-col items-center relative overflow-y-auto touch-auto">
@@ -80,43 +104,45 @@ const Tribuna = () => {
       <div className="h-16" />
       {/* Feed principal solo visible si no hay paneles abiertos */}
       {!showPerfil && !showChat && (
-        <div className="w-full max-w-md mx-auto flex flex-col gap-6 pb-32">
-          {/* Card para crear publicación */}
-          <div className="bg-white border-2 border-green-500 rounded-2xl shadow-lg p-4 flex items-center gap-3 mt-2">
-            <FaUserCircle className="text-3xl text-white/80" />
-            <input type="text" placeholder="¿Qué quieres compartir?" className="flex-1 bg-transparent text-white placeholder:text-white/60 focus:outline-none text-base px-2" />
-            <button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full p-2 shadow transition"><FaPlus /></button>
-          </div>
-          {/* Feed de publicaciones */}
-          {publicacionesMock.map(pub => (
-            <motion.div key={pub.id} className="bg-white border-2 border-green-500 rounded-2xl shadow-lg overflow-hidden flex flex-col" initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-              <div className="flex items-center gap-3 px-4 pt-4">
-                <FaUserCircle className="text-2xl text-white/80" />
-                <div>
-                  <div className="text-white font-bold text-sm">{pub.usuario}</div>
-                  <div className="text-xs text-white/50">{pub.fecha}</div>
-                </div>
+        <div {...handlers} className="w-full h-[90vh] flex flex-col items-center justify-center select-none relative">
+          {/* Mensaje de ayuda navegación */}
+          {!isMobile ? (
+            <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 bg-white/60 backdrop-blur-lg rounded-2xl px-8 py-4 flex flex-col items-center shadow-lg animate-fade-in-up">
+              <div className="flex gap-4 mb-2">
+                <span className="inline-flex flex-col items-center"><span className="text-3xl">⬆️</span><span className="text-xs text-blue-900 font-bold mt-1">Arriba</span></span>
+                <span className="inline-flex flex-col items-center"><span className="text-3xl">⬇️</span><span className="text-xs text-blue-900 font-bold mt-1">Abajo</span></span>
               </div>
-              {pub.tipo === 'video' && (
-                <video src={pub.contenido} controls autoPlay loop className="w-full h-[340px] object-cover bg-black mt-3" />
-              )}
-              {pub.tipo === 'imagen' && (
-                <img src={pub.contenido} alt="Publicación" className="w-full h-[340px] object-cover bg-black mt-3" />
-              )}
-              {pub.tipo === 'texto' && (
-                <div className="text-white text-lg px-4 py-8">{pub.descripcion}</div>
-              )}
-              {pub.tipo !== 'texto' && (
-                <div className="text-white text-base px-4 py-3">{pub.descripcion}</div>
-              )}
-              {/* Acciones */}
-              <div className="flex items-center gap-6 px-4 pb-4 pt-2 border-t border-[#134e4a]/40">
-                <button className="text-white/80 hover:text-emerald-400 font-bold transition">Me gusta</button>
-                <button className="text-white/80 hover:text-blue-400 font-bold transition">Comentar</button>
-                <button className="text-white/80 hover:text-indigo-400 font-bold transition">Compartir</button>
-              </div>
+              <span className="text-blue-900 font-semibold text-sm">Usa las flechas para deslizar entre publicaciones</span>
+            </div>
+          ) : (
+            <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 bg-white/60 backdrop-blur-lg rounded-2xl px-6 py-3 flex flex-col items-center shadow-lg animate-fade-in-up">
+              <span className="text-2xl mb-1">👆</span>
+              <span className="text-blue-900 font-semibold text-sm">Desliza con el dedo</span>
+            </div>
+          )}
+          <AnimatePresence initial={false} custom={currentIndex}>
+            <motion.div
+              key={currentIndex}
+              initial={{ y: 80, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -80, opacity: 0 }}
+              transition={{ duration: 0.45, type: 'spring', bounce: 0.18 }}
+              className="w-full h-full flex items-center justify-center"
+            >
+              <FeedPost post={publicacionesMock[currentIndex]} onShowComments={() => setShowComments(true)} />
             </motion.div>
-          ))}
+          </AnimatePresence>
+        </div>
+      )}
+      {/* Panel de comentarios tipo TikTok (placeholder) */}
+      {showComments && (
+        <div className="fixed inset-0 z-[999999] flex items-end md:items-center justify-center bg-black/40" onClick={() => setShowComments(false)}>
+          <div className="w-full md:w-[420px] max-h-[70vh] bg-white/90 rounded-t-3xl md:rounded-3xl shadow-2xl p-6 flex flex-col animate-fade-in-up border border-blue-200" onClick={e => e.stopPropagation()}>
+            <div className="font-bold text-blue-900 text-lg mb-2">Comentarios</div>
+            <div className="flex-1 overflow-y-auto text-blue-900 text-base mb-4">(Próximamente: lista de comentarios)</div>
+            <input type="text" placeholder="Escribe un comentario..." className="w-full rounded-full border border-blue-200 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" />
+            <button className="mt-3 px-6 py-2 rounded-full bg-blue-600 text-white font-bold shadow hover:bg-blue-700 transition">Enviar</button>
+          </div>
         </div>
       )}
       {/* Botón flotante para crear publicación solo si no hay paneles abiertos */}
