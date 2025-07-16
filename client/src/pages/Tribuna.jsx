@@ -3,6 +3,7 @@ import { FaUserCircle, FaComments, FaPlus } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, MessageCircle } from 'lucide-react';
 import { usePanel } from '../contexts/PanelContext';
+import { useAuth } from '../contexts/AuthContext';
 
 // Mock de publicaciones (en el futuro vendrán del backend)
 const publicacionesMock = [
@@ -41,6 +42,7 @@ const Tribuna = () => {
   // const [showPerfil, setShowPerfil] = useState(false);
   // const [showChat, setShowChat] = useState(false);
   const { showPerfil, setShowPerfil, showChat, setShowChat } = usePanel();
+  const { isLoggedIn } = useAuth();
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center relative overflow-x-hidden">
@@ -70,7 +72,7 @@ const Tribuna = () => {
           <button onClick={() => setShowChat(true)} className="flex flex-col items-center gap-0 text-[#0a2240] hover:text-blue-700 transition relative">
             <MessageCircle className="w-7 h-7" />
             <span className="text-xs font-semibold mt-0.5">Chat</span>
-            <span className="absolute -top-1 -right-2 bg-blue-600 text-xs text-white rounded-full px-1.5 py-0.5 font-bold shadow">2</span>
+            <span className="absolute -top-2 -right-2 bg-blue-600 text-xs text-white rounded-full px-1.5 py-0.5 font-bold shadow animate-pulse">2</span>
           </button>
         </div>
       </div>
@@ -119,42 +121,81 @@ const Tribuna = () => {
       <button className="fixed bottom-24 right-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full p-4 shadow-2xl z-40 md:hidden flex items-center justify-center text-3xl transition-all duration-200">
         <FaPlus />
       </button>
-      {/* Panel de perfil a pantalla completa */}
+      {/* Panel de perfil a pantalla completa con lógica de login */}
       <AnimatePresence>
         {showPerfil && (
-          <motion.div initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="fixed inset-0 w-full h-full bg-[#1e293b] shadow-2xl z-50 p-6 flex flex-col gap-6">
-            <button onClick={() => setShowPerfil(false)} className="self-end text-white text-2xl mb-2">×</button>
-            <div className="flex flex-col items-center gap-2">
-              <User className="w-16 h-16 text-white/80 mb-2" />
-              <div className="text-white font-bold text-lg">Nombre Usuario</div>
-              <div className="text-blue-400 font-semibold text-sm">@usuario</div>
-              <div className="text-white/60 text-xs">Rol: Jugador</div>
-            </div>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-2 font-bold shadow">Editar perfil</button>
-            {/* Acceso directo al chat desde el perfil */}
-            <button onClick={() => { setShowPerfil(false); setShowChat(true); }} className="flex items-center gap-2 mt-4 text-blue-400 hover:text-blue-200 font-semibold transition text-base">
-              <MessageCircle className="w-5 h-5" /> Ir al chat
-            </button>
-            {/* Más info y acciones aquí */}
+          <motion.div initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="fixed inset-0 w-full h-full bg-[#1e293b] shadow-2xl z-50 p-0 flex flex-col justify-center items-center">
+            {/* Contenido difuminado si no logueado */}
+            <div className={`absolute inset-0 w-full h-full transition-all duration-300 ${!isLoggedIn ? 'backdrop-blur-[6px] brightness-75' : ''}`}></div>
+            {/* Overlay premium si no logueado */}
+            {!isLoggedIn && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+                <div className="bg-white/90 rounded-2xl shadow-2xl px-8 py-8 flex flex-col items-center animate-fade-in-up border border-blue-200">
+                  <User className="w-12 h-12 text-blue-600 mb-2" />
+                  <div className="text-xl font-bold text-blue-900 mb-2 text-center">Necesitas iniciar sesión o registrarte</div>
+                  <div className="text-blue-700 text-sm mb-4 text-center">Para acceder a tu perfil, por favor inicia sesión o crea una cuenta.</div>
+                  <div className="flex gap-4 mt-2">
+                    <a href="/login" className="px-5 py-2 rounded-full font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow transition">Iniciar sesión</a>
+                    <a href="/register" className="px-5 py-2 rounded-full font-semibold text-blue-700 bg-white border border-blue-300 hover:bg-blue-50 shadow transition">Registrarse</a>
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Botón cerrar siempre visible */}
+            <button onClick={() => setShowPerfil(false)} className="absolute top-6 right-8 text-white text-4xl font-bold hover:text-blue-300 transition-all duration-200 focus:outline-none animate-pulse-slow z-20">×</button>
+            {/* Contenido real solo si logueado */}
+            {isLoggedIn && (
+              <div className="flex flex-col items-center gap-2 z-10 mt-20">
+                <User className="w-16 h-16 text-white/80 mb-2" />
+                <div className="text-white font-bold text-lg">Nombre Usuario</div>
+                <div className="text-blue-400 font-semibold text-sm">@usuario</div>
+                <div className="text-white/60 text-xs">Rol: Jugador</div>
+                <button className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-2 font-bold shadow mt-4">Editar perfil</button>
+                <button onClick={() => { setShowPerfil(false); setShowChat(true); }} className="flex items-center gap-2 mt-4 text-blue-400 hover:text-blue-200 font-semibold transition text-base">
+                  <MessageCircle className="w-5 h-5" /> Ir al chat
+                </button>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
-      {/* Panel lateral de chat mejorado */}
+      {/* Panel lateral de chat mejorado con lógica de login */}
       <AnimatePresence>
         {showChat && (
           <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="fixed inset-0 w-full h-full bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700/95 shadow-2xl z-[99999] p-0 flex flex-col">
-            <div className="flex items-center justify-between px-8 py-6 border-b border-white/10">
+            {/* Contenido difuminado si no logueado */}
+            <div className={`absolute inset-0 w-full h-full transition-all duration-300 ${!isLoggedIn ? 'backdrop-blur-[6px] brightness-75' : ''}`}></div>
+            {/* Overlay premium si no logueado */}
+            {!isLoggedIn && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+                <div className="bg-white/90 rounded-2xl shadow-2xl px-8 py-8 flex flex-col items-center animate-fade-in-up border border-blue-200">
+                  <MessageCircle className="w-12 h-12 text-blue-600 mb-2" />
+                  <div className="text-xl font-bold text-blue-900 mb-2 text-center">Necesitas iniciar sesión o registrarte</div>
+                  <div className="text-blue-700 text-sm mb-4 text-center">Para acceder al chat, por favor inicia sesión o crea una cuenta.</div>
+                  <div className="flex gap-4 mt-2">
+                    <a href="/login" className="px-5 py-2 rounded-full font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow transition">Iniciar sesión</a>
+                    <a href="/register" className="px-5 py-2 rounded-full font-semibold text-blue-700 bg-white border border-blue-300 hover:bg-blue-50 shadow transition">Registrarse</a>
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Botón cerrar siempre visible */}
+            <div className="flex items-center justify-between px-8 py-6 border-b border-white/10 z-20">
               <div className="text-white font-bold text-2xl tracking-wide">Chats</div>
               <button onClick={() => setShowChat(false)} className="text-white text-4xl font-bold hover:text-blue-300 transition-all duration-200 focus:outline-none animate-pulse-slow">×</button>
             </div>
-            {/* Lista de chats aquí */}
-            <div className="flex-1 flex flex-col items-center justify-center text-white/70 text-lg">
-              (Próximamente: lista de chats)
-            </div>
+            {/* Contenido real solo si logueado */}
+            {isLoggedIn && (
+              <div className="flex-1 flex flex-col items-center justify-center text-white/70 text-lg z-10">
+                (Próximamente: lista de chats)
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
       <style>{`
+        @keyframes fade-in-up { 0%{opacity:0;transform:translateY(40px);} 100%{opacity:1;transform:translateY(0);} }
+        .animate-fade-in-up { animation: fade-in-up 0.7s cubic-bezier(.39,.575,.565,1) both; }
         @keyframes pulse-slow { 0%,100%{opacity:1;} 50%{opacity:0.6;} }
         .animate-pulse-slow { animation: pulse-slow 1.8s infinite; }
       `}</style>
