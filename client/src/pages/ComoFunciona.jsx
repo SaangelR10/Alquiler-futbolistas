@@ -8,6 +8,7 @@ import step3 from '../assets/lottie/como-funciona/step3.json';
 import step4 from '../assets/lottie/como-funciona/step4.json';
 import step5 from '../assets/lottie/como-funciona/step5.json';
 import step6 from '../assets/lottie/como-funciona/step6.json';
+import { useNavigate } from 'react-router-dom';
 
 const pasos = [
   {
@@ -85,6 +86,7 @@ const ComoFunciona = () => {
   const total = pasos.length;
   const containerRef = useRef();
   const [animateCreaEquipo, setAnimateCreaEquipo] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (animateCreaEquipo) {
@@ -198,6 +200,7 @@ const ComoFunciona = () => {
         <div className="mt-16 text-center">
           <button
             className={`inline-block bg-gradient-to-r from-indigo-700 to-blue-600 text-white font-bold px-12 py-4 rounded-2xl shadow-2xl text-2xl hover:scale-105 hover:bg-indigo-800 transition-all duration-200 ${animateCreaEquipo ? 'animate-bounce-once' : ''}`}
+            onClick={() => navigate('/crear-equipo')}
           >
             ¡Crea tu equipo ahora!
           </button>
