@@ -6,6 +6,7 @@ import { usePanel } from '../contexts/PanelContext';
 import { useAuth } from '../contexts/AuthContext';
 import FeedPost from '../components/FeedPost';
 import { useSwipeable } from 'react-swipeable';
+import { useRef } from 'react';
 
 // Mock de publicaciones (en el futuro vendrán del backend)
 const publicacionesMock = [
@@ -47,23 +48,50 @@ const Tribuna = () => {
   const { isLoggedIn } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showComments, setShowComments] = useState(false);
+  const [showHelp, setShowHelp] = useState(true);
+  const lastIndexRef = useRef(currentIndex);
+  const [direction, setDirection] = useState(0); // 1: abajo, -1: arriba
 
   const isMobile = window.innerWidth < 768;
 
   useEffect(() => {
     if (!isMobile) {
       const handleKeyDown = (e) => {
-        if (e.key === 'ArrowUp') setCurrentIndex(i => Math.max(i - 1, 0));
-        if (e.key === 'ArrowDown') setCurrentIndex(i => Math.min(i + 1, publicacionesMock.length - 1));
+        if (e.key === 'ArrowUp') {
+          setCurrentIndex(i => {
+            if (i > 0) setShowHelp(false);
+            setDirection(-1);
+            return Math.max(i - 1, 0);
+          });
+        }
+        if (e.key === 'ArrowDown') {
+          setCurrentIndex(i => {
+            if (i < publicacionesMock.length - 1) setShowHelp(false);
+            setDirection(1);
+            return Math.min(i + 1, publicacionesMock.length - 1);
+          });
+        }
       };
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
     }
   }, []);
-
+  // Ocultar ayuda al hacer swipe en móvil y detectar dirección
   const handlers = isMobile ? useSwipeable({
-    onSwipedUp: () => setCurrentIndex(i => Math.min(i + 1, publicacionesMock.length - 1)),
-    onSwipedDown: () => setCurrentIndex(i => Math.max(i - 1, 0)),
+    onSwipedUp: () => {
+      setCurrentIndex(i => {
+        if (i < publicacionesMock.length - 1) setShowHelp(false);
+        setDirection(1);
+        return Math.min(i + 1, publicacionesMock.length - 1);
+      });
+    },
+    onSwipedDown: () => {
+      setCurrentIndex(i => {
+        if (i > 0) setShowHelp(false);
+        setDirection(-1);
+        return Math.max(i - 1, 0);
+      });
+    },
     trackMouse: false,
     preventDefaultTouchmoveEvent: true,
   }) : {};
@@ -106,30 +134,46 @@ const Tribuna = () => {
       {!showPerfil && !showChat && (
         <div {...handlers} className="w-full h-[90vh] flex flex-col items-center justify-center select-none relative">
           {/* Mensaje de ayuda navegación */}
-          {!isMobile ? (
-            <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 bg-white/60 backdrop-blur-lg rounded-2xl px-8 py-4 flex flex-col items-center shadow-lg animate-fade-in-up">
+          {showHelp && (!isMobile ? (
+            <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 bg-white/70 backdrop-blur-lg rounded-2xl px-8 py-4 flex flex-col items-center shadow-lg animate-fade-in-up border border-blue-200">
               <div className="flex gap-4 mb-2">
-                <span className="inline-flex flex-col items-center"><span className="text-3xl">⬆️</span><span className="text-xs text-blue-900 font-bold mt-1">Arriba</span></span>
-                <span className="inline-flex flex-col items-center"><span className="text-3xl">⬇️</span><span className="text-xs text-blue-900 font-bold mt-1">Abajo</span></span>
+                {/* Flechas tipo tecla Mac */}
+                <span className="inline-flex flex-col items-center">
+                  <span className="inline-block bg-[#f5f5f7] border border-[#d1d5db] rounded-lg px-3 py-1 shadow text-2xl text-blue-900" style={{fontFamily:'SF Pro Display, Arial', fontWeight:600, letterSpacing:1}}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 7L12 17" stroke="#2563eb" strokeWidth="2.2" strokeLinecap="round"/><path d="M7 12L12 7L17 12" stroke="#2563eb" strokeWidth="2.2" strokeLinecap="round"/></svg>
+                  </span>
+                  <span className="text-xs text-blue-900 font-bold mt-1">Arriba</span>
+                </span>
+                <span className="inline-flex flex-col items-center">
+                  <span className="inline-block bg-[#f5f5f7] border border-[#d1d5db] rounded-lg px-3 py-1 shadow text-2xl text-blue-900" style={{fontFamily:'SF Pro Display, Arial', fontWeight:600, letterSpacing:1}}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 17L12 7" stroke="#2563eb" strokeWidth="2.2" strokeLinecap="round"/><path d="M17 12L12 17L7 12" stroke="#2563eb" strokeWidth="2.2" strokeLinecap="round"/></svg>
+                  </span>
+                  <span className="text-xs text-blue-900 font-bold mt-1">Abajo</span>
+                </span>
               </div>
               <span className="text-blue-900 font-semibold text-sm">Usa las flechas para deslizar entre publicaciones</span>
             </div>
           ) : (
-            <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 bg-white/60 backdrop-blur-lg rounded-2xl px-6 py-3 flex flex-col items-center shadow-lg animate-fade-in-up">
-              <span className="text-2xl mb-1">👆</span>
+            <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 bg-white/70 backdrop-blur-lg rounded-2xl px-6 py-3 flex flex-col items-center shadow-lg animate-fade-in-up border border-blue-200">
+              {/* SVG premium de dedo deslizando */}
+              <span className="mb-1">
+                <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="38" height="38" rx="12" fill="#f5f5f7"/><path d="M19 10C19 8.89543 19.8954 8 21 8C22.1046 8 23 8.89543 23 10V22" stroke="#2563eb" strokeWidth="2.2" strokeLinecap="round"/><path d="M23 22L21 20L19 22" stroke="#2563eb" strokeWidth="2.2" strokeLinecap="round"/><circle cx="21" cy="10" r="2" fill="#2563eb"/></svg>
+              </span>
               <span className="text-blue-900 font-semibold text-sm">Desliza con el dedo</span>
             </div>
-          )}
-          <AnimatePresence initial={false} custom={currentIndex}>
+          ))}
+          <AnimatePresence initial={false} custom={direction} mode="wait">
             <motion.div
               key={currentIndex}
-              initial={{ y: 80, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -80, opacity: 0 }}
-              transition={{ duration: 0.45, type: 'spring', bounce: 0.18 }}
-              className="w-full h-full flex items-center justify-center"
+              initial={(custom) => isMobile ? { y: custom === 1 ? 80 : -80, opacity: 0, scale: 0.98, filter: 'blur(8px)' } : { y: custom === 1 ? 60 : -60, opacity: 0, scale: 0.99, filter: 'blur(6px)' }}
+              animate={isMobile ? { y: 0, opacity: 1, scale: 1, filter: 'blur(0px)' } : { y: 0, opacity: 1, scale: 1, filter: 'blur(0px)' }}
+              exit={(custom) => isMobile ? { y: custom === 1 ? -80 : 80, opacity: 0, scale: 0.98, filter: 'blur(8px)' } : { y: custom === 1 ? -60 : 60, opacity: 0, scale: 0.99, filter: 'blur(6px)' }}
+              transition={isMobile ? { duration: 0.38, type: 'spring', bounce: 0.12, damping: 18, stiffness: 180 } : { duration: 0.32, type: 'spring', bounce: 0.08, damping: 20, stiffness: 210 }}
+              className={isMobile ? "w-full h-full flex items-center justify-center bg-transparent" : "w-full h-full flex items-center justify-center bg-transparent"}
             >
-              <FeedPost post={publicacionesMock[currentIndex]} onShowComments={() => setShowComments(true)} />
+              <div className={isMobile ? "w-full" : "w-[370px] max-w-full"}>
+                <FeedPost post={publicacionesMock[currentIndex]} onShowComments={() => setShowComments(true)} />
+              </div>
             </motion.div>
           </AnimatePresence>
         </div>
