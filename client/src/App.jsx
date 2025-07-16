@@ -17,6 +17,7 @@ import CreateTeamWizard from './pages/CreateTeamWizard';
 import BuscarCentral from './pages/BuscarCentral';
 import { FaSearch, FaUsers, FaTrophy, FaUserPlus, FaStar, FaHandshake } from 'react-icons/fa';
 import RecuperarContraseña from './pages/RecuperarContraseña';
+import Tribuna from './pages/Tribuna';
 
 function Funcionalidades() {
   const funcionalidades = [
@@ -104,6 +105,7 @@ function AppContent() {
         <Route path="/torneo/:id" element={<TorneoDetalle />} />
         <Route path="/crear-equipo" element={<CreateTeamWizard />} />
         <Route path="/recuperar" element={<RecuperarContraseña />} />
+        <Route path="/tribuna" element={<Tribuna />} />
       </Routes>
       {!hideNavFooter && <Footer />}
     </>
