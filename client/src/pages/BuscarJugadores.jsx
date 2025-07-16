@@ -3,6 +3,7 @@ import PlayerMap from '../components/PlayerMap';
 import PlayerCard from '../components/PlayerCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import ModalReservaStepper from '../components/ModalReservaStepper';
 
 // Estructura de departamentos y ciudades (muestra, escalable)
 const departamentosColombia = [
@@ -107,6 +108,17 @@ const BuscarJugadores = () => {
   const [showSugerencias, setShowSugerencias] = useState(false);
   const [vista, setVista] = useState('tarjetas'); // 'tarjetas' o 'mapa'
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
+  const [modalReservaAbierto, setModalReservaAbierto] = useState(false);
+  const [jugadorReserva, setJugadorReserva] = useState(null);
+
+  const abrirModalReserva = (jugador) => {
+    setJugadorReserva(jugador);
+    setModalReservaAbierto(true);
+  };
+  const cerrarModalReserva = () => {
+    setModalReservaAbierto(false);
+    setTimeout(() => setJugadorReserva(null), 300);
+  };
 
   // Función para limpiar filtros
   const limpiarFiltros = () => {
@@ -156,94 +168,127 @@ const BuscarJugadores = () => {
         Volver
       </button>
       <h1 className="text-3xl font-bold text-indigo-700 mb-6 text-center">Buscar jugadores</h1>
-      {/* Filtro profesional departamento/ciudad siempre visible */}
-      <div className="flex flex-col md:flex-row gap-4 mb-2 items-center justify-center w-full">
-        <select
-          className="border rounded-lg px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-56 md:w-60"
-          value={filtroDepartamento}
-          onChange={e => {
-            setFiltroDepartamento(e.target.value);
-            setFiltroCiudad('');
-            setBusquedaCiudad('');
-          }}
-        >
-          <option value="">Selecciona un departamento</option>
-          {departamentosColombia.map(dep => (
-            <option key={dep.nombre} value={dep.nombre}>{dep.nombre}</option>
-          ))}
-        </select>
-        <div className="relative w-56 md:w-60">
-          <input
-            type="text"
-            className="border rounded-lg px-4 py-2 w-full text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder={filtroCiudad ? filtroCiudad : "Buscar ciudad..."}
-            value={busquedaCiudad}
-            onChange={e => setBusquedaCiudad(e.target.value)}
-            disabled={!filtroDepartamento}
-            style={filtroCiudad ? { fontWeight: 'bold', color: '#3730a3', background: '#eef2ff' } : {}}
-          />
-          <select
-            className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
-            value={filtroCiudad}
-            onChange={e => {
-              setFiltroCiudad(e.target.value);
-              setBusquedaCiudad('');
-            }}
-            disabled={!filtroDepartamento}
-          >
-            <option value="">Selecciona una ciudad</option>
-            {ciudadesFiltradas.map(ciudad => (
-              <option key={ciudad.nombre} value={ciudad.nombre}>{ciudad.nombre}</option>
-            ))}
-          </select>
-          {/* Lista visible de ciudades filtradas */}
-          {filtroDepartamento && busquedaCiudad && (
-            <div className="absolute z-20 bg-white border rounded-lg shadow w-full mt-1 max-h-40 overflow-y-auto">
-              {ciudadesFiltradas.length === 0 ? (
-                <div className="px-4 py-2 text-gray-400">No hay ciudades</div>
-              ) : (
-                ciudadesFiltradas.map(ciudad => (
-                  <div
-                    key={ciudad.nombre}
-                    className={`px-4 py-2 hover:bg-indigo-50 cursor-pointer ${filtroCiudad === ciudad.nombre ? 'bg-indigo-100 font-bold' : ''}`}
-                    onClick={() => {
-                      setFiltroCiudad(ciudad.nombre);
-                      setBusquedaCiudad('');
-                    }}
-                  >
-                    {ciudad.nombre}
-                  </div>
-                ))
+      {/* Panel de filtros premium y ordenado */}
+      <div className="w-full flex justify-center mb-8">
+        <div className="backdrop-blur-xl bg-white/70 border border-indigo-100 shadow-2xl rounded-3xl px-6 py-8 flex flex-col gap-6 items-center w-full max-w-4xl relative">
+          <div className="w-full flex flex-col md:flex-row gap-4 md:gap-8 items-center justify-center">
+            {/* Departamento */}
+            <div className="flex flex-col items-center w-full md:w-56">
+              <label className="text-xs font-bold text-indigo-700 mb-1 flex items-center gap-1"><svg className='w-4 h-4 text-indigo-400' fill='none' stroke='currentColor' strokeWidth='2' viewBox='0 0 24 24'><path d='M12 2C6.48 2 2 6.48 2 12c0 5.52 4.48 10 10 10s10-4.48 10-10C22 6.48 17.52 2 12 2z' /><circle cx='12' cy='12' r='5' /></svg> Departamento</label>
+              <select
+                className="rounded-xl border border-indigo-200 px-4 py-2 text-indigo-700 bg-white/80 focus:outline-none focus:ring-2 focus:ring-indigo-400 w-full shadow-sm"
+                value={filtroDepartamento}
+                onChange={e => {
+                  setFiltroDepartamento(e.target.value);
+                  setFiltroCiudad('');
+                  setBusquedaCiudad('');
+                }}
+              >
+                <option value="">Selecciona un departamento</option>
+                {departamentosColombia.map(dep => (
+                  <option key={dep.nombre} value={dep.nombre}>{dep.nombre}</option>
+                ))}
+              </select>
+            </div>
+            {/* Ciudad */}
+            <div className="flex flex-col items-center w-full md:w-56 relative">
+              <label className="text-xs font-bold text-indigo-700 mb-1 flex items-center gap-1"><svg className='w-4 h-4 text-indigo-400' fill='none' stroke='currentColor' strokeWidth='2' viewBox='0 0 24 24'><path d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z' /><circle cx='12' cy='9' r='2.5' /></svg> Ciudad</label>
+              <input
+                type="text"
+                className="rounded-xl border border-indigo-200 px-4 py-2 w-full text-indigo-700 bg-white/80 focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm"
+                placeholder={filtroCiudad ? filtroCiudad : "Buscar ciudad..."}
+                value={busquedaCiudad}
+                onChange={e => setBusquedaCiudad(e.target.value)}
+                disabled={!filtroDepartamento}
+                style={filtroCiudad ? { fontWeight: 'bold', color: '#3730a3', background: '#eef2ff' } : {}}
+              />
+              <select
+                className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                value={filtroCiudad}
+                onChange={e => {
+                  setFiltroCiudad(e.target.value);
+                  setBusquedaCiudad('');
+                }}
+                disabled={!filtroDepartamento}
+              >
+                <option value="">Selecciona una ciudad</option>
+                {ciudadesFiltradas.map(ciudad => (
+                  <option key={ciudad.nombre} value={ciudad.nombre}>{ciudad.nombre}</option>
+                ))}
+              </select>
+              {/* Lista visible de ciudades filtradas */}
+              {filtroDepartamento && busquedaCiudad && (
+                <div className="absolute z-20 bg-white border rounded-xl shadow w-full mt-1 max-h-40 overflow-y-auto">
+                  {ciudadesFiltradas.length === 0 ? (
+                    <div className="px-4 py-2 text-gray-400">No hay ciudades</div>
+                  ) : (
+                    ciudadesFiltradas.map(ciudad => (
+                      <div
+                        key={ciudad.nombre}
+                        className={`px-4 py-2 hover:bg-indigo-50 cursor-pointer ${filtroCiudad === ciudad.nombre ? 'bg-indigo-100 font-bold' : ''}`}
+                        onClick={() => {
+                          setFiltroCiudad(ciudad.nombre);
+                          setBusquedaCiudad('');
+                        }}
+                      >
+                        {ciudad.nombre}
+                      </div>
+                    ))
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </div>
-      </div>
-      {/* Botón más filtros y filtros avanzados debajo del selector de ciudad */}
-      <div className="flex flex-col items-center w-full mb-6">
-        <div className="flex justify-center mb-2 w-full">
-          <button
-            className="flex items-center gap-2 px-6 py-2 rounded-lg font-semibold bg-white border border-indigo-200 shadow hover:bg-indigo-50 text-indigo-700 transition-all duration-200"
-            onClick={() => setMostrarFiltros(v => !v)}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 5h18M6 10h12M9 15h6" /></svg>
-            {mostrarFiltros ? 'Ocultar filtros' : 'Más filtros'}
-          </button>
-        </div>
-        <AnimatePresence>
-          {mostrarFiltros && (
-            <motion.div
-              initial={{ opacity: 0, y: -16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -16 }}
-              transition={{ duration: 0.3 }}
-              className="bg-white rounded-xl shadow p-4 flex flex-col gap-2 w-full items-center"
-            >
-              <div className="flex flex-col md:flex-row md:items-center md:gap-4 gap-2 w-full justify-center">
-                <div className="flex-1 flex flex-col min-w-[140px] max-w-[220px]">
-                  <label className="text-sm font-semibold text-indigo-700 mb-1">Posición</label>
+            {/* Nombre */}
+            <div className="flex flex-col items-center w-full md:w-48 relative">
+              <label className="text-xs font-bold text-indigo-700 mb-1 flex items-center gap-1"><svg className='w-4 h-4 text-indigo-400' fill='none' stroke='currentColor' strokeWidth='2' viewBox='0 0 24 24'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z' /></svg> Nombre</label>
+              <input
+                type="text"
+                className="rounded-xl border border-indigo-200 px-4 py-2 w-full text-indigo-700 bg-white/80 focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm"
+                placeholder="Buscar por nombre..."
+                value={filtroNombre}
+                onChange={e => {
+                  setFiltroNombre(e.target.value);
+                  setShowSugerencias(true);
+                }}
+                onFocus={() => setShowSugerencias(true)}
+                onBlur={() => setTimeout(() => setShowSugerencias(false), 120)}
+                autoComplete="off"
+              />
+              {/* Dropdown de sugerencias */}
+              {showSugerencias && sugerenciasNombres.length > 0 && (
+                <div className="absolute left-0 top-full z-30 bg-white border border-indigo-100 rounded-xl shadow w-full mt-1 max-h-40 overflow-y-auto animate-fade-in" style={{minWidth: '100%'}}>
+                  {sugerenciasNombres.map(nombre => (
+                    <div
+                      key={nombre}
+                      className="px-4 py-2 hover:bg-indigo-50 cursor-pointer text-indigo-700"
+                      onMouseDown={() => {
+                        setFiltroNombre(nombre);
+                        setShowSugerencias(false);
+                      }}
+                    >
+                      {nombre}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          {/* Filtros avanzados */}
+          <AnimatePresence initial={false}>
+            {mostrarFiltros && (
+              <motion.div
+                key="filtros-avanzados"
+                initial={{ opacity: 0, y: -16, height: 0 }}
+                animate={{ opacity: 1, y: 0, height: 'auto' }}
+                exit={{ opacity: 0, y: -16, height: 0 }}
+                transition={{ duration: 0.32, ease: 'easeInOut' }}
+                className="w-full flex flex-col md:flex-row gap-4 md:gap-8 items-center justify-center mt-2 overflow-hidden"
+              >
+                {/* Posición */}
+                <div className="flex flex-col items-center w-full md:w-48">
+                  <label className="text-xs font-bold text-indigo-700 mb-1 flex items-center gap-1"><svg className='w-4 h-4 text-indigo-400' fill='none' stroke='currentColor' strokeWidth='2' viewBox='0 0 24 24'><path d='M12 2a10 10 0 100 20 10 10 0 000-20zm0 18a8 8 0 110-16 8 8 0 010 16zm-1-13h2v6h-2zm0 8h2v2h-2z' /></svg> Posición</label>
                   <select
-                    className="border rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="rounded-xl border border-indigo-200 px-4 py-2 text-indigo-700 bg-white/80 focus:outline-none focus:ring-2 focus:ring-indigo-400 w-full shadow-sm"
                     value={filtroPosicion}
                     onChange={e => setFiltroPosicion(e.target.value)}
                   >
@@ -252,23 +297,21 @@ const BuscarJugadores = () => {
                       <option key={pos} value={pos}>{pos}</option>
                     ))}
                   </select>
-                  <span className="text-xs text-gray-500 mt-1">Filtra por la posición.</span>
                 </div>
-                {/* Filtro de fecha del partido */}
-                <div className="flex-1 flex flex-col min-w-[140px] max-w-[220px]">
-                  <label className="text-sm font-semibold text-indigo-700 mb-1">Fecha del partido</label>
+                {/* Fecha */}
+                <div className="flex flex-col items-center w-full md:w-48">
+                  <label className="text-xs font-bold text-indigo-700 mb-1 flex items-center gap-1"><svg className='w-4 h-4 text-indigo-400' fill='none' stroke='currentColor' strokeWidth='2' viewBox='0 0 24 24'><path d='M7 10V6a5 5 0 0110 0v4M5 20h14a2 2 0 002-2V10a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' /></svg> Fecha</label>
                   <input
                     type="date"
-                    className="border rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="rounded-xl border border-indigo-200 px-4 py-2 w-full text-indigo-700 bg-white/80 focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm"
                     value={filtroFecha}
                     onChange={e => setFiltroFecha(e.target.value)}
                   />
-                  <span className="text-xs text-gray-500 mt-1">Selecciona la fecha del partido.</span>
                 </div>
-                {/* Filtro de precio y botón limpiar filtros siguen igual */}
-                <div className="flex-1 flex flex-col min-w-[220px] max-w-[320px]">
-                  <label className="text-sm font-semibold text-indigo-700 mb-1">Precio por hora (€)</label>
-                  <div className="flex items-center gap-2 flex-wrap md:flex-nowrap">
+                {/* Precio */}
+                <div className="flex flex-col items-center w-full md:w-48">
+                  <label className="text-xs font-bold text-indigo-700 mb-1 flex items-center gap-1"><svg className='w-4 h-4 text-indigo-400' fill='none' stroke='currentColor' strokeWidth='2' viewBox='0 0 24 24'><path d='M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 10c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z' /></svg> Precio (€)</label>
+                  <div className="flex items-center gap-2 w-full">
                     <input
                       type="number"
                       min={0}
@@ -278,7 +321,7 @@ const BuscarJugadores = () => {
                         const val = Math.max(0, Math.min(Number(e.target.value), filtroPrecio[1]));
                         setFiltroPrecio([val, filtroPrecio[1]]);
                       }}
-                      className="w-16 border rounded px-2 py-1 text-center text-indigo-700 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                      className="w-16 border rounded px-2 py-1 text-center text-indigo-700 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white/80 shadow-sm"
                       placeholder="Mín"
                     />
                     <input
@@ -299,80 +342,86 @@ const BuscarJugadores = () => {
                         const val = Math.max(filtroPrecio[0], Math.min(Number(e.target.value), 100000));
                         setFiltroPrecio([filtroPrecio[0], val]);
                       }}
-                      className="w-16 border rounded px-2 py-1 text-center text-indigo-700 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                      className="w-16 border rounded px-2 py-1 text-center text-indigo-700 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white/80 shadow-sm"
                       placeholder="Máx"
                     />
-                    <input
-                      type="range"
-                      min={0}
-                      max={100000}
-                      value={filtroPrecio[1]}
-                      onChange={e => setFiltroPrecio([filtroPrecio[0], +e.target.value])}
-                      className="accent-indigo-600 w-24"
-                    />
                   </div>
-                  <span className="text-xs text-gray-500 mt-1">Puedes escribir los valores o usar las barras.</span>
                 </div>
-                {/* Botón limpiar filtros */}
-                <div className="flex items-center justify-end min-w-[140px] md:ml-8 mt-0">
-                  <button
-                    onClick={limpiarFiltros}
-                    className={`bg-white border border-indigo-200 text-indigo-700 font-semibold w-44 py-2 rounded-lg shadow hover:bg-indigo-50 hover:border-indigo-400 transition-all duration-200 flex items-center justify-center gap-2 relative ${filtrosAplicados ? 'pl-2' : ''}`}
-                    title="Limpiar todos los filtros"
-                    style={{ alignSelf: 'flex-end' }}
-                  >
-                    <AnimatePresence>
-                      {filtrosAplicados && (
-                        <motion.span
-                          key="x-icon"
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -10 }}
-                          transition={{ duration: 0.25 }}
-                          className="flex items-center"
-                        >
-                          <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                    <span className="hidden sm:inline">Limpiar filtros</span>
-                  </button>
-                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          {/* Botones de acción */}
+          <div className="w-full flex flex-col md:flex-row gap-4 items-center justify-between mt-4">
+            <div className="flex gap-2 w-full md:w-auto justify-center md:justify-start">
+              <button
+                className="flex items-center gap-2 px-6 py-2 rounded-xl font-semibold bg-gradient-to-r from-indigo-500 to-blue-400 text-white shadow-lg hover:from-indigo-600 hover:to-blue-500 transition-all duration-200"
+                onClick={() => setMostrarFiltros(v => !v)}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 5h18M6 10h12M9 15h6" /></svg>
+                {mostrarFiltros ? 'Ocultar filtros' : 'Más filtros'}
+              </button>
+              <button
+                className="flex items-center gap-2 px-6 py-2 rounded-xl font-semibold bg-white border border-indigo-200 text-indigo-700 shadow hover:bg-indigo-50 hover:border-indigo-400 transition"
+                onClick={limpiarFiltros}
+                disabled={!filtrosAplicados}
+              >
+                <AnimatePresence initial={false}>
+                  {filtrosAplicados && (
+                    <motion.div
+                      key="icono-x"
+                      initial={{ opacity: 0, scale: 0.7, x: -8 }}
+                      animate={{ opacity: 1, scale: 1, x: 0 }}
+                      exit={{ opacity: 0, scale: 0.7, x: -8 }}
+                      transition={{ duration: 0.22, ease: 'easeInOut' }}
+                      className="flex"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" /></svg>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                Limpiar filtros
+              </button>
+            </div>
+            {/* Toggle tarjetas/mapa */}
+            <div className="flex justify-center w-full md:w-auto mt-2 md:mt-0">
+              <div className="inline-flex rounded-xl bg-indigo-50 p-1 shadow border border-indigo-100">
+                <button
+                  className={`flex items-center gap-2 px-6 py-2 rounded-lg font-semibold transition-all duration-200 ${vista==='tarjetas' ? 'bg-white text-indigo-700 shadow' : 'text-gray-500 hover:text-indigo-700'}`}
+                  onClick={() => setVista('tarjetas')}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/></svg>
+                  Tarjetas
+                </button>
+                <button
+                  className={`flex items-center gap-2 px-6 py-2 rounded-lg font-semibold transition-all duration-200 ${vista==='mapa' ? 'bg-white text-indigo-700 shadow' : 'text-gray-500 hover:text-indigo-700'}`}
+                  onClick={() => setVista('mapa')}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 20l-5.447-2.724A2 2 0 013 15.382V6.618a2 2 0 011.553-1.894l5.447-1.724a2 2 0 011.262 0l5.447 1.724A2 2 0 0121 6.618v8.764a2 2 0 01-1.553 1.894L14 20a2 2 0 01-1.262 0z" /></svg>
+                  Mapa
+                </button>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-      {/* Mensaje explicativo del toggle */}
-      <div className="text-center text-indigo-700 font-medium mb-2">Elige cómo quieres ver los resultados: en tarjetas o en el mapa.</div>
-      {/* Toggle de vista */}
-      <div className="flex justify-center mb-8">
-        <div className="inline-flex rounded-xl bg-indigo-50 p-1 shadow border border-indigo-100">
-          <button
-            className={`flex items-center gap-2 px-6 py-2 rounded-lg font-semibold transition-all duration-200 ${vista==='tarjetas' ? 'bg-white text-indigo-700 shadow' : 'text-gray-500 hover:text-indigo-700'}`}
-            onClick={() => setVista('tarjetas')}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/></svg>
-            Tarjetas
-          </button>
-          <button
-            className={`flex items-center gap-2 px-6 py-2 rounded-lg font-semibold transition-all duration-200 ${vista==='mapa' ? 'bg-white text-indigo-700 shadow' : 'text-gray-500 hover:text-indigo-700'}`}
-            onClick={() => setVista('mapa')}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 20l-5.447-2.724A2 2 0 013 15.382V6.618a2 2 0 011.553-1.894l5.447-1.724a2 2 0 011.262 0l5.447 1.724A2 2 0 0121 6.618v8.764a2 2 0 01-1.553 1.894L14 20a2 2 0 01-1.262 0z" /></svg>
-            Mapa
-          </button>
+            </div>
+          </div>
         </div>
       </div>
       {/* Vista seleccionada */}
       {vista === 'tarjetas' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {jugadoresFiltrados.length === 0 ? (
-            <div className="col-span-full text-center text-gray-500">No se encontraron jugadores con esos filtros.</div>
-          ) : (
-            jugadoresFiltrados.map(j => <PlayerCard key={j.id} jugador={j} />)
-          )}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {jugadoresFiltrados.length === 0 ? (
+              <div className="col-span-full text-center text-gray-500">No se encontraron jugadores con esos filtros.</div>
+            ) : (
+              jugadoresFiltrados.map(j => <PlayerCard key={j.id} jugador={j} onReservar={abrirModalReserva} />)
+            )}
+          </div>
+          {/* Modal de reserva global */}
+          <ModalReservaStepper
+            jugador={jugadorReserva}
+            abierto={modalReservaAbierto}
+            onClose={cerrarModalReserva}
+            volverAtras={cerrarModalReserva}
+          />
+        </>
       ) : (
         <div className="max-w-4xl mx-auto">
           <PlayerMap jugadores={jugadoresFiltrados} ciudadSeleccionada={ciudadSeleccionada} />
