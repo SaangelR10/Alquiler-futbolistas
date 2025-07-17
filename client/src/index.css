@@ -1,6 +1,6 @@
 @tailwind base;
 @tailwind components;
-@tailwind utilities;
+@tailwind utilities; 
 
 /* Forzar el z-index de los controles y el contenedor del mapa Leaflet */
 .leaflet-container {
